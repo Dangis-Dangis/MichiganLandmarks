@@ -1,0 +1,28 @@
+# Maintainer-only planning notes
+internal/
+
+# Python
+__pycache__/
+*.pyc
+.cache/
+
+# Pipeline scratch
+agent-tools/
+
+# IDE
+.idea/
+*.iml
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Mobile / Android (generated or local-only)
+mobile/node_modules/
+mobile/www/
+mobile/android/
+mobile/*.keystore
+mobile/*.jks
+
+# Regenerate data with `python -m pipeline.run`. Tracked so clone-and-build works
+# without re-fetching sources; omit if you prefer a smaller repo and always rebuild.

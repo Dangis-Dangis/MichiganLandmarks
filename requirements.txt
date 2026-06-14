@@ -1,0 +1,4 @@
+# Michigan Landmarks data pipeline
+#
+# The pipeline uses only the Python standard library so it runs with Python 3.10+
+# and no install step.

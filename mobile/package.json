@@ -1,0 +1,24 @@
+{
+  "name": "michigan-landmarks-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-contained Android (Capacitor) app for Michigan Landmarks — bundles UI and landmark data for offline use.",
+  "scripts": {
+    "build:web": "node copy-web.mjs",
+    "add:android": "npm run build:web && cap add android",
+    "sync": "npm run build:web && cap sync",
+    "open:android": "cap open android",
+    "apk:debug": "cd android && gradlew.bat assembleDebug",
+    "apk:release": "cd android && gradlew.bat assembleRelease",
+    "icons:android": "npx @capacitor/assets generate --android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/core": "^8.4.0",
+    "@capacitor/geolocation": "^8.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.4.0"
+  }
+}

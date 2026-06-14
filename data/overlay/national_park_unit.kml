@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Michigan national_park_unit</name>
+  <Style id="lighthouse"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/marina.png</href></Icon></IconStyle></Style>
+  <Style id="historical_marker"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/info-i.png</href></Icon></IconStyle></Style>
+  <Style id="nrhp_site"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/library_maps.png</href></Icon></IconStyle></Style>
+  <Style id="state_park"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/parks.png</href></Icon></IconStyle></Style>
+  <Style id="national_park_unit"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/mountains.png</href></Icon></IconStyle></Style>
+    <Folder>
+    <Placemark>
+      <name>Father Marquette National Memorial</name>
+      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/Father%20Marquette%20National%20Memorial%20Building%20Aug%202011.jpg" width="320"/><br/><p>National memorial of the United States</p><p>Established: 1975 &middot; County: Mackinac</p><p><a href="https://en.wikipedia.org/wiki/Father_Marquette_National_Memorial">More information</a></p>]]></description>
+      <styleUrl>#national_park_unit</styleUrl>
+      <Point><coordinates>-84.7172,45.8517,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>Greenstone Ridge Trail</name>
+      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/ISROTobin.jpg" width="320"/><br/><p>hiking trail on Isle Royale in Michigan, United States</p><p>County: Keweenaw</p><p><a href="https://en.wikipedia.org/wiki/Greenstone_Ridge_Trail">More information</a></p>]]></description>
+      <styleUrl>#national_park_unit</styleUrl>
+      <Point><coordinates>-88.8086,48.0353,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>Isle Royale National Park</name>
+      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/Lake%20Superior%20Shore%20at%20Isle%20Royale%20National%20Park%20%2849051653101%29.jpg" width="320"/><br/><p>United States National Park on Isle Royale in the Upper Peninsula of Michigan</p><p>Established: 1940 &middot; County: Keweenaw</p><p><a href="https://en.wikipedia.org/wiki/Isle_Royale_National_Park">More information</a></p>]]></description>
+      <styleUrl>#national_park_unit</styleUrl>
+      <Point><coordinates>-88.90929,47.995865,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>Keweenaw National Historical Park</name>
+      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/Keweenaw%20National%20Historical%20Park%20Headquarters.jpg" width="320"/><br/><p>U.S. national park in Michigan</p><p>Established: 1992 &middot; County: Houghton</p><p><a href="https://en.wikipedia.org/wiki/Keweenaw_National_Historical_Park">More information</a></p>]]></description>
+      <styleUrl>#national_park_unit</styleUrl>
+      <Point><coordinates>-88.5636,47.1564,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>North Country Trail</name>
+      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/NCT%20Huron-Manistee%201.jpg" width="320"/><br/><p>long-distance hiking trail in the United States</p><p>County: Kent</p><p><a href="https://en.wikipedia.org/wiki/North_Country_Trail">More information</a></p>]]></description>
+      <styleUrl>#national_park_unit</styleUrl>
+      <Point><coordinates>-85.3378,42.9345,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>Pictured Rocks National Lakeshore</name>
+      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/Pictured%20Rocks%20Bridalveil%20Falls.jpg" width="320"/><br/><p>U.S. National Lakeshore on Lake Superior</p><p>County: Alger</p><p><a href="https://en.wikipedia.org/wiki/Pictured_Rocks_National_Lakeshore">More information</a></p>]]></description>
+      <styleUrl>#national_park_unit</styleUrl>
+      <Point><coordinates>-86.3125,46.5622,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>River Raisin National Battlefield Park</name>
+      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/River%20Raisin%20National%20Battlefield%20Park.jpg" width="320"/><br/><p>national park in Michigan, USA</p><p>Established: 2009 &middot; County: Monroe</p><p><a href="https://en.wikipedia.org/wiki/River_Raisin_National_Battlefield_Park">More information</a></p>]]></description>
+      <styleUrl>#national_park_unit</styleUrl>
+      <Point><coordinates>-83.378333,41.913611,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>Sleeping Bear Dunes National Lakeshore</name>
+      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/Sleeping%20Bear%20Dunes.jpg" width="320"/><br/><p>protected area</p><p>Established: 1970 &middot; County: Leelanau</p><p><a href="https://en.wikipedia.org/wiki/Sleeping_Bear_Dunes_National_Lakeshore">More information</a></p>]]></description>
+      <styleUrl>#national_park_unit</styleUrl>
+      <Point><coordinates>-86.020278,44.913055,0</coordinates></Point>
+    </Placemark>
+    </Folder>
+  </Document>
+</kml>

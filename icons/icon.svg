@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#0b3d2e"/>
+  <!-- map pin -->
+  <path d="M256 92
+           c-79 0 -143 62 -143 139
+           c0 96 122 184 138 195
+           a8 8 0 0 0 10 0
+           c16 -11 138 -99 138 -195
+           c0 -77 -64 -139 -143 -139 Z"
+        fill="#ffffff"/>
+  <!-- inner disc -->
+  <circle cx="256" cy="231" r="92" fill="#0b3d2e"/>
+  <!-- monument / landmark glyph (pediment + columns + base) -->
+  <g fill="#ffffff">
+    <polygon points="256,168 318,206 194,206"/>          <!-- roof / pediment -->
+    <rect x="200" y="212" width="112" height="12"/>        <!-- architrave -->
+    <rect x="206" y="230" width="14" height="56"/>         <!-- columns -->
+    <rect x="232" y="230" width="14" height="56"/>
+    <rect x="258" y="230" width="14" height="56"/>
+    <rect x="284" y="230" width="14" height="56"/>
+    <rect x="192" y="290" width="128" height="14" rx="3"/> <!-- base -->
+  </g>
+</svg>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b3d2e" />
+  <title>Legal &amp; Privacy — Michigan Landmarks</title>
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body class="legal-page">
+  <header class="legal-header">
+    <a href="./" class="legal-back">&larr; Back to map</a>
+    <h1>Legal &amp; Privacy</h1>
+    <p class="muted">Michigan Landmarks — unofficial guide to public landmark data</p>
+  </header>
+
+  <main class="legal-main">
+    <section id="unofficial">
+      <h2>Unofficial app</h2>
+      <p>
+        Michigan Landmarks is an <strong>independent hobby project</strong>. It is
+        not affiliated with, endorsed by, or operated by the Michigan Department of
+        Natural Resources, Michigan History Center, National Park Service, National
+        Register of Historic Places program, or the State of Michigan.
+      </p>
+    </section>
+
+    <section id="privacy">
+      <h2>Privacy policy</h2>
+      <p><em>Last updated: June 2026</em></p>
+      <h3>What this app does</h3>
+      <p>
+        Michigan Landmarks helps you browse publicly available landmark information
+        (lighthouses, historical markers, NRHP sites, state and national parks) on
+        a map and list. There are <strong>no user accounts</strong> and
+        <strong>no backend server</strong> operated by this project.
+      </p>
+      <h3>Location</h3>
+      <p>
+        If you tap <strong>Near me</strong>, the app reads your device location
+        <strong>on your device only</strong> to sort landmarks by distance and
+        center the map. Location is <strong>not sent to our servers</strong> (we do
+        not operate any). On Android, the Capacitor app requests the standard
+        location permission; you can deny it and still browse the map manually.
+      </p>
+      <h3>Place search (Nominatim)</h3>
+      <p>
+        When you search for a named place and press Enter, the app sends your
+        search text to
+        <a href="https://nominatim.openstreetmap.org/" target="_blank" rel="noopener">OpenStreetMap Nominatim</a>
+        to resolve coordinates. That request goes to OpenStreetMap infrastructure,
+        not to us. Please use place search sparingly (personal, manual queries).
+      </p>
+      <h3>Other network requests</h3>
+      <ul>
+        <li><strong>Map tiles</strong> — loaded from OpenFreeMap (OpenStreetMap data).</li>
+        <li><strong>Photos</strong> — hotlinked from Michigan DNR ArcGIS or Wikimedia Commons when you open a landmark; not bundled in the APK.</li>
+        <li><strong>Directions</strong> — opens Google Maps in your browser (Google's privacy policy applies).</li>
+        <li><strong>Official / Wikipedia links</strong> — open the respective sites when you tap them.</li>
+      </ul>
+      <h3>Data stored on your device</h3>
+      <p>
+        The Android app bundles the landmark index and detail files in the APK.
+        When you preview the UI in a desktop browser during development, a
+        service worker may cache files you have viewed. Neither mode stores your
+        location history.
+      </p>
+      <h3>Children</h3>
+      <p>The app does not knowingly collect personal information from anyone.</p>
+      <h3>Contact</h3>
+      <p>
+        Questions about this policy: open an issue on the project repository or
+        contact the maintainer listed in the repo README.
+      </p>
+    </section>
+
+    <section id="sources">
+      <h2>Data sources &amp; attribution</h2>
+      <table class="legal-table">
+        <thead>
+          <tr><th>Source</th><th>License</th><th>Credit</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Michigan DNR / History Center markers</td>
+            <td>Michigan open data (attribution requested)</td>
+            <td>Michigan History Center / Michigan DNR</td>
+          </tr>
+          <tr>
+            <td>Michigan DNR state parks</td>
+            <td>Michigan open data (attribution requested)</td>
+            <td>Michigan DNR</td>
+          </tr>
+          <tr>
+            <td>NRHP points</td>
+            <td>U.S. Government work (public domain)</td>
+            <td>National Park Service</td>
+          </tr>
+          <tr>
+            <td>NPS units</td>
+            <td>U.S. Government work / CC0</td>
+            <td>NPS / Wikidata</td>
+          </tr>
+          <tr>
+            <td>Lighthouses (Wikidata)</td>
+            <td>CC0</td>
+            <td>Wikidata contributors</td>
+          </tr>
+          <tr>
+            <td>Wikipedia summaries (some parks)</td>
+            <td>CC BY-SA 4.0</td>
+            <td>Wikipedia — linked on detail cards</td>
+          </tr>
+          <tr>
+            <td>Wikimedia Commons photos</td>
+            <td>Per-file (see detail card)</td>
+            <td>Photographer credit on detail card</td>
+          </tr>
+          <tr>
+            <td>OpenStreetMap basemap</td>
+            <td>ODbL</td>
+            <td>&copy; OpenStreetMap contributors</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="muted">
+        Images without a resolved license are omitted from the dataset at build time.
+        Photos shown in the app are &copy; their respective owners.
+      </p>
+    </section>
+
+    <section id="disclaimer">
+      <h2>Disclaimer</h2>
+      <p>
+        Information is provided <strong>for general reference only</strong>. Coordinates,
+        descriptions, and access details may be wrong or out of date. This app is
+        <strong>not intended for navigation</strong> or safety-critical decisions.
+        Always verify hours, fees, and access on official agency websites before
+        visiting. The software is provided &ldquo;as is&rdquo; without warranty.
+      </p>
+    </section>
+
+    <section id="software">
+      <h2>Software</h2>
+      <p>
+        Application source code is licensed under the
+        <a href="https://opensource.org/licenses/MIT">MIT License</a>.
+        Third-party libraries include MapLibre GL JS (BSD 3-Clause) and Capacitor (MIT).
+        See <code>THIRD_PARTY_NOTICES.md</code> in the repository.
+      </p>
+    </section>
+  </main>
+</body>
+</html>

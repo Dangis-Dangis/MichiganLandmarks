@@ -1,0 +1,8 @@
+{
+  "appId": "com.michiganlandmarks.app",
+  "appName": "Michigan Landmarks",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  }
+}

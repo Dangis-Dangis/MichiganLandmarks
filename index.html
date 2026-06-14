@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#0b3d2e" />
+  <title>Michigan Landmarks</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header id="topbar">
+    <button id="menuToggle" class="icon-btn" aria-label="Toggle filters" title="Filters">&#9776;</button>
+    <div id="searchWrap">
+      <input id="searchInput" type="search" placeholder="Search landmarks, or type a place + Enter" autocomplete="off" />
+      <button id="searchClear" class="icon-btn" aria-label="Clear" title="Clear">&times;</button>
+    </div>
+    <button id="locateBtn" class="icon-btn" aria-label="Find near me" title="Near me">&#9678;</button>
+    <a id="aboutBtn" class="icon-btn" href="./legal.html" aria-label="Legal and privacy" title="Legal / privacy">&#9432;</a>
+    <button id="viewToggle" class="icon-btn" aria-label="Toggle list/map" title="List / Map">&#8801;</button>
+  </header>
+
+  <aside id="filters" class="hidden" aria-label="Filters and sorting">
+    <div class="filter-section">
+      <h3>Categories</h3>
+      <div id="categoryFilters"></div>
+    </div>
+    <div class="filter-section">
+      <h3>Region</h3>
+      <div id="regionFilters"></div>
+    </div>
+    <div class="filter-section">
+      <h3>Sort by</h3>
+      <select id="sortSelect">
+        <option value="distance">Distance (needs location)</option>
+        <option value="name">Name (A&ndash;Z)</option>
+        <option value="year_desc">Year (newest)</option>
+        <option value="year_asc">Year (oldest)</option>
+      </select>
+    </div>
+    <div class="filter-section">
+      <label class="checkbox"><input type="checkbox" id="withImageOnly" /> Has photo only</label>
+    </div>
+    <p id="resultCount" class="muted"></p>
+  </aside>
+
+  <main id="content">
+    <div id="map"></div>
+    <section id="listView" class="hidden" aria-label="List of landmarks"></section>
+  </main>
+
+  <div id="detailPanel" class="hidden" role="dialog" aria-label="Landmark details">
+    <button id="detailClose" class="icon-btn" aria-label="Close">&times;</button>
+    <div id="detailBody"></div>
+  </div>
+
+  <div id="status" class="status hidden"></div>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
