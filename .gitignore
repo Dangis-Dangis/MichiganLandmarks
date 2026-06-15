@@ -21,6 +21,7 @@ Thumbs.db
 mobile/node_modules/
 mobile/www/
 mobile/android/
+mobile/android/key.properties
 mobile/*.keystore
 mobile/*.jks
 

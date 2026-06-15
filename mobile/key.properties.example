@@ -1,0 +1,6 @@
+# Copy to mobile/android/key.properties and fill in your keystore passwords.
+# Paths are relative to mobile/android/app/ (the app module directory).
+storeFile=../../../internal/mi-landmarks.keystore
+storePassword=your-keystore-password
+keyAlias=milandmarks
+keyPassword=your-key-password

@@ -13,15 +13,16 @@ Build steps: [`../mobile/README.md`](../mobile/README.md).
 
 ## Release build
 
-1. Create a keystore (once):
+1. Create a keystore (once) and store it outside the repo (e.g. `internal/mi-landmarks.keystore`):
    ```bash
    keytool -genkey -v -keystore mi-landmarks.keystore -alias milandmarks \
      -keyalg RSA -keysize 2048 -validity 10000
    ```
-   Store the keystore and passwords outside the repo (`*.keystore` is gitignored).
+   `*.keystore` and `internal/` are gitignored.
 
-2. Configure signing in Android Studio (**Build → Generate Signed Bundle / APK**)
-   or add a `signingConfigs` block in `mobile/android/app/build.gradle`.
+2. Copy `mobile/key.properties.example` to `mobile/android/key.properties` and set
+   your `storePassword` and `keyPassword`. Release signing is wired in
+   `mobile/android/app/build.gradle` via `signingConfigs.release`.
 
 3. Build an **Android App Bundle** (required for Play; APK is for sideloading only):
    ```bash
