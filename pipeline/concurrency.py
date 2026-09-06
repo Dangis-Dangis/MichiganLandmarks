@@ -26,8 +26,10 @@ def map_threaded(
     def _safe(item: T) -> R | None:
         try:
             return fn(item)
-        except Exception:  # noqa: BLE001 - best-effort batch work
+        except Exception as exc:  # noqa: BLE001 - best-effort batch work
             if swallow:
+                from . import log
+                log.warn(f"threaded task failed: {exc!r}")
                 return None
             raise
 

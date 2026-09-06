@@ -7,10 +7,10 @@ import time
 
 from concurrent.futures import ThreadPoolExecutor
 
-from . import config, enrich, licensing, outputs, report
+from . import config, enrich, licensing, log, outputs, report
 from .dedupe import merge
 from .schema import Landmark
-from .sources import lighthouses, markers, nps, nrhp, state_parks
+from .sources import lighthouses, markers, museums, nps, nrhp, state_parks
 
 SOURCES = [
     ("MI-DNR-Markers", markers.fetch),
@@ -18,11 +18,8 @@ SOURCES = [
     ("NRHP", nrhp.fetch),
     ("Lighthouses", lighthouses.fetch),
     ("NPS", nps.fetch),
+    ("Museums", museums.fetch),
 ]
-
-
-def _log(msg: str) -> None:
-    print(msg, flush=True)
 
 
 def _ensure_unique_ids(records: list[Landmark]) -> int:
@@ -45,6 +42,7 @@ def _ensure_unique_ids(records: list[Landmark]) -> int:
 
 def run(do_enrich: bool = True) -> dict:
     start = time.time()
+    log.reset()
     outputs.ensure_dirs()
 
     all_records: list[Landmark] = []
@@ -55,10 +53,10 @@ def run(do_enrich: bool = True) -> dict:
         t0 = time.time()
         try:
             records = fn()
-            _log(f"[{name}] fetched {len(records)} records in {time.time() - t0:.1f}s")
+            log.info(f"[{name}] fetched {len(records)} records in {time.time() - t0:.1f}s")
             return name, records
         except Exception as exc:  # noqa: BLE001 - one bad source must not kill the run
-            _log(f"[{name}] ERROR: {exc}")
+            log.error(f"[{name}] fetch failed: {exc}")
             return name, []
 
     # Sources are independent network calls -> fetch them concurrently.
@@ -72,51 +70,60 @@ def run(do_enrich: bool = True) -> dict:
 
     if do_enrich:
         if enrich.wikimedia_reachable():
-            _log("[enrich] fetching Wikipedia summaries for state parks...")
+            log.info("[enrich] fetching Wikipedia summaries for state parks...")
             e = enrich.enrich_state_parks(all_records)
-            _log(f"[enrich] enriched {e} state parks")
-            _log("[enrich] resolving Commons image licenses (batched)...")
+            log.info(f"[enrich] enriched {e} state parks")
+            log.info("[enrich] resolving Commons image licenses (batched)...")
             n = enrich.resolve_commons_licenses(all_records)
-            _log(f"[enrich] resolved {n} image licenses")
+            log.info(f"[enrich] resolved {n} image licenses")
         else:
-            _log("[enrich] SKIPPED: Wikimedia API not reachable from this environment "
-                 "(re-run where commons.wikimedia.org / en.wikipedia.org are accessible)")
+            log.warn(
+                "[enrich] SKIPPED: Wikimedia API not reachable from this environment "
+                "(re-run where commons.wikimedia.org / en.wikipedia.org are accessible)"
+            )
 
-    _log("[dedupe] merging cross-source duplicates...")
+    log.info("[dedupe] merging cross-source duplicates...")
     merged, clusters = merge(all_records)
-    _log(f"[dedupe] {len(all_records)} -> {len(merged)} records ({clusters} clusters merged)")
+    log.info(f"[dedupe] {len(all_records)} -> {len(merged)} records ({clusters} clusters merged)")
 
     collisions = _ensure_unique_ids(merged)
     if collisions:
-        _log(f"[ids] disambiguated {collisions} records sharing a source id "
-             "(e.g. multi-point NRHP listings)")
+        log.warn(
+            f"[ids] disambiguated {collisions} records sharing a source id "
+            "(e.g. multi-point NRHP listings)"
+        )
 
-    _log("[region] backfilling counties from coordinates...")
+    log.info("[region] backfilling counties from coordinates...")
     filled = enrich.fill_missing_counties(merged)
     for lm in merged:
         lm.region = config.region_for_county(lm.county)
     regioned = sum(1 for lm in merged if lm.region)
-    _log(f"[region] filled {filled} counties; {regioned}/{len(merged)} records have a region")
+    log.info(f"[region] filled {filled} counties; {regioned}/{len(merged)} records have a region")
+    missing_region = len(merged) - regioned
+    if missing_region:
+        log.warn(f"[region] {missing_region} records still lack a region")
 
-    _log("[license] stripping images without a known license...")
+    log.info("[license] stripping images without a known license...")
     stripped = licensing.strip_unlicensed_images(merged)
     if stripped:
-        _log(f"[license] omitted {stripped} images (unspecified or disallowed license)")
+        log.warn(f"[license] omitted {stripped} images (unspecified or disallowed license)")
 
-    _log("[output] writing geojson / csv / kml / app data / overlays...")
+    log.info("[output] writing geojson / csv / kml / app data / overlays...")
     outputs.write_geojson(merged)
     outputs.write_csv(merged)
     outputs.write_kml(merged)
     _, details = outputs.write_app_data(merged)
     outputs.write_overlays(merged)
-    _log(f"[output] wrote {details} detail files")
+    log.info(f"[output] wrote {details} detail files")
 
-    _log("[report] building data report...")
+    log.info("[report] building data report...")
     rep = report.build(merged, raw_counts, clusters, images_stripped=stripped)
+    rep["log_counts"] = log.counts()
     json_path, md_path = report.write(rep)
-    _log(f"[report] {md_path}")
+    log.info(f"[report] {md_path}")
 
-    _log(f"[done] {len(merged)} records in {time.time() - start:.1f}s")
+    log.info(f"[done] {len(merged)} records in {time.time() - start:.1f}s")
+    log.info(log.summary_line())
     return rep
 
 

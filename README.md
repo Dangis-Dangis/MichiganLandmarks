@@ -1,9 +1,9 @@
 # Michigan Landmarks
 
 An offline-first Android app for exploring Michigan's lighthouses, historical
-markers, registered historic places (NRHP), and state and national parks. Data
-is aggregated from official open sources into one searchable map and list with
-~3,300 landmarks bundled in the app.
+markers, registered historic places (NRHP), state and national parks, and museums.
+Data is aggregated from official open sources into one searchable map and list
+with thousands of landmarks bundled in the app.
 
 There is no hosted website and no backend. Landmark data ships inside the APK;
 map basemap tiles and optional place search load from the network when available.

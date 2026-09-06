@@ -17,8 +17,9 @@ CATEGORY_PRIORITY = {
     "lighthouse": 0,
     "national_park_unit": 1,
     "state_park": 2,
-    "nrhp_site": 3,
-    "historical_marker": 4,
+    "museum": 3,
+    "nrhp_site": 4,
+    "historical_marker": 5,
 }
 
 DISTANCE_THRESHOLD_M = 80.0
@@ -27,7 +28,7 @@ NAME_JACCARD_MIN = 0.5
 _STOPWORDS = {
     "the", "of", "and", "a", "lighthouse", "light", "station", "historic",
     "district", "state", "park", "recreation", "area", "national", "site",
-    "monument", "memorial", "house", "building",
+    "monument", "memorial", "house", "building", "museum",
 }
 _NORM_RE = re.compile(r"[^a-z0-9\s]")
 

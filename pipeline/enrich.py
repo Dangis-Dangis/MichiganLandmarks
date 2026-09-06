@@ -3,9 +3,9 @@
 Enrichment never fabricates data. If a lookup is ambiguous or empty, the field is
 left as None and the data report reflects the gap.
 
-Commons licenses are resolved in batches (up to 50 files per API call) to stay
-within Wikimedia rate limits. A search fallback runs only for files the batch
-missed.
+Commons licenses are resolved in serial batches (Action API, ≤1 concurrent) with
+a pause between calls. Wikipedia REST summaries use ≤3 workers. See Wikimedia
+Robot policy: https://wikitech.wikimedia.org/wiki/Robot_policy
 """
 from __future__ import annotations
 
@@ -36,7 +36,9 @@ def _county_for_point(lm: Landmark) -> str | None:
             retries=config.ENRICH_RETRIES,
             backoff=config.ENRICH_BACKOFF,
         )
-    except RuntimeError:
+    except RuntimeError as exc:
+        from . import log
+        log.warn(f"county lookup failed for {lm.name!r}: {exc}")
         return None
     results = data.get("results") or []
     if not results:
@@ -52,7 +54,7 @@ def fill_missing_counties(landmarks: list[Landmark]) -> int:
     """Backfill county from coordinates for records lacking one (lighthouses, parks,
     NPS units), so they can be assigned a region. Best-effort + parallel."""
     targets = [lm for lm in landmarks if not lm.county and lm.latitude is not None]
-    results = map_threaded(_county_for_point, targets, config.ENRICH_WORKERS)
+    results = map_threaded(_county_for_point, targets, config.COUNTY_WORKERS)
     filled = 0
     for lm, county in zip(targets, results):
         if county:

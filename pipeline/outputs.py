@@ -101,6 +101,21 @@ def write_app_data(landmarks: list[Landmark]) -> tuple[Path, int]:
     return index_path, written
 
 
+def _date_reported(lm: Landmark) -> str | None:
+    """Best date to show as 'Date reported' on a KML balloon.
+
+    Prefer the source's significant_date (ISO-ish), then the extracted year.
+    """
+    raw = (lm.significant_date or "").strip()
+    if raw:
+        if "T" in raw:
+            raw = raw.split("T", 1)[0]
+        return raw
+    if lm.year:
+        return str(lm.year)
+    return None
+
+
 def _placemark(lm: Landmark, trim_desc: int | None = None) -> str:
     desc = lm.description or ""
     if trim_desc and len(desc) > trim_desc:
@@ -111,19 +126,34 @@ def _placemark(lm: Landmark, trim_desc: int | None = None) -> str:
     if desc:
         html_parts.append(f"<p>{_xml_escape(desc)}</p>")
     meta = []
-    if lm.date_type and lm.year:
-        meta.append(f"{lm.date_type.title()}: {lm.year}")
     if lm.county:
         meta.append(f"County: {_xml_escape(lm.county)}")
+    if lm.city:
+        meta.append(f"City: {_xml_escape(lm.city)}")
     if meta:
         html_parts.append("<p>" + " &middot; ".join(meta) + "</p>")
     if lm.official_url:
         html_parts.append(f'<p><a href="{_xml_escape(lm.official_url)}">More information</a></p>')
+    reported = _date_reported(lm)
+    if reported:
+        html_parts.append(f"<p>Date reported: {_xml_escape(reported)}</p>")
     html = "".join(html_parts)
+    ext = []
+    cat_label = config.CATEGORY_LABELS.get(lm.category, lm.category)
+    ext.append(f'        <Data name="category"><value>{_xml_escape(cat_label)}</value></Data>\n')
+    if reported:
+        ext.append(
+            f'        <Data name="date_reported"><value>{_xml_escape(reported)}</value></Data>\n'
+        )
+    if lm.county:
+        ext.append(
+            f'        <Data name="county"><value>{_xml_escape(lm.county)}</value></Data>\n'
+        )
     return (
         "    <Placemark>\n"
         f"      <name>{_xml_escape(lm.name)}</name>\n"
         f"      <description><![CDATA[{html}]]></description>\n"
+        f"      <ExtendedData>\n{''.join(ext)}      </ExtendedData>\n"
         f'      <styleUrl>#{lm.category}</styleUrl>\n'
         f"      <Point><coordinates>{lm.longitude},{lm.latitude},0</coordinates></Point>\n"
         "    </Placemark>\n"
@@ -156,6 +186,7 @@ def _kml_icon(category: str) -> str:
         "nrhp_site": "library_maps",
         "state_park": "parks",
         "national_park_unit": "mountains",
+        "museum": "museum_historical",
     }.get(category, "placemark_circle")
 
 
@@ -169,8 +200,9 @@ def write_kml(landmarks: list[Landmark]) -> Path:
         if not items:
             continue
         marks = "".join(_placemark(lm) for lm in items)
+        label = config.CATEGORY_LABELS.get(cat, cat)
         folders.append(
-            f"    <Folder>\n      <name>{cat} ({len(items)})</name>\n{marks}    </Folder>\n"
+            f"    <Folder>\n      <name>{_xml_escape(label)} ({len(items)})</name>\n{marks}    </Folder>\n"
         )
     path = config.DATA_DIR / "landmarks.kml"
     path.write_text(_kml_document("Michigan Landmarks", "".join(folders)), encoding="utf-8")
@@ -185,8 +217,12 @@ def write_overlays(landmarks: list[Landmark]) -> list[Path]:
     for cat, items in by_cat.items():
         marks = "".join(_placemark(lm, trim_desc=_OVERLAY_DESC_LIMIT) for lm in items)
         kml_path = config.OVERLAY_DIR / f"{cat}.kml"
+        label = config.CATEGORY_LABELS.get(cat, cat)
         kml_path.write_text(
-            _kml_document(f"Michigan {cat}", f"    <Folder>\n{marks}    </Folder>\n"),
+            _kml_document(
+                f"Michigan {label}",
+                f"    <Folder>\n      <name>{_xml_escape(label)} ({len(items)})</name>\n{marks}    </Folder>\n",
+            ),
             encoding="utf-8",
         )
         paths.append(kml_path)
@@ -195,7 +231,7 @@ def write_overlays(landmarks: list[Landmark]) -> list[Path]:
         with csv_path.open("w", newline="", encoding="utf-8") as fh:
             writer = csv.writer(fh)
             writer.writerow([
-                "name", "latitude", "longitude", "subtype", "year",
+                "name", "latitude", "longitude", "subtype", "year", "date_reported",
                 "description", "image_url", "official_url", "county", "city",
             ])
             for lm in items:
@@ -204,6 +240,7 @@ def write_overlays(landmarks: list[Landmark]) -> list[Path]:
                     desc = desc[: _OVERLAY_DESC_LIMIT - 1].rstrip() + "\u2026"
                 writer.writerow([
                     lm.name, lm.latitude, lm.longitude, lm.subtype or "", lm.year or "",
+                    _date_reported(lm) or "",
                     desc, lm.image_url or "", lm.official_url or "",
                     lm.county or "", lm.city or "",
                 ])

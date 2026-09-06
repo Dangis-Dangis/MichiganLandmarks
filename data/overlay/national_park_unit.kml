@@ -1,60 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
-    <name>Michigan national_park_unit</name>
+    <name>Michigan National parks</name>
   <Style id="lighthouse"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/marina.png</href></Icon></IconStyle></Style>
   <Style id="historical_marker"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/info-i.png</href></Icon></IconStyle></Style>
   <Style id="nrhp_site"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/library_maps.png</href></Icon></IconStyle></Style>
   <Style id="state_park"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/parks.png</href></Icon></IconStyle></Style>
   <Style id="national_park_unit"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/mountains.png</href></Icon></IconStyle></Style>
+  <Style id="museum"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/museum_historical.png</href></Icon></IconStyle></Style>
     <Folder>
-    <Placemark>
-      <name>Father Marquette National Memorial</name>
-      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/Father%20Marquette%20National%20Memorial%20Building%20Aug%202011.jpg" width="320"/><br/><p>National memorial of the United States</p><p>Established: 1975 &middot; County: Mackinac</p><p><a href="https://en.wikipedia.org/wiki/Father_Marquette_National_Memorial">More information</a></p>]]></description>
-      <styleUrl>#national_park_unit</styleUrl>
-      <Point><coordinates>-84.7172,45.8517,0</coordinates></Point>
-    </Placemark>
-    <Placemark>
-      <name>Greenstone Ridge Trail</name>
-      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/ISROTobin.jpg" width="320"/><br/><p>hiking trail on Isle Royale in Michigan, United States</p><p>County: Keweenaw</p><p><a href="https://en.wikipedia.org/wiki/Greenstone_Ridge_Trail">More information</a></p>]]></description>
-      <styleUrl>#national_park_unit</styleUrl>
-      <Point><coordinates>-88.8086,48.0353,0</coordinates></Point>
-    </Placemark>
+      <name>National parks (6)</name>
     <Placemark>
       <name>Isle Royale National Park</name>
-      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/Lake%20Superior%20Shore%20at%20Isle%20Royale%20National%20Park%20%2849051653101%29.jpg" width="320"/><br/><p>United States National Park on Isle Royale in the Upper Peninsula of Michigan</p><p>Established: 1940 &middot; County: Keweenaw</p><p><a href="https://en.wikipedia.org/wiki/Isle_Royale_National_Park">More information</a></p>]]></description>
+      <description><![CDATA[<img src="https://www.nps.gov/common/uploads/structured_data/3C7AC355-1DD8-B71B-0B9C2F07853F39F1.jpg" width="320"/><br/><p>Explore a rugged, isolated island far from our connected communities. Isle Royale offers adventures for backpackers, hikers, boaters, paddlers, and divers. Cross Lake Superior and make a commitment: Become a part of this island, and let it become a part of you. Find peace and refuge in island wilderness – because Isle Royale, in turn, finds refuge in us. Help Isle Royale stay wild.</p><p>County: Keweenaw</p><p><a href="https://www.nps.gov/isro/index.htm">More information</a></p>]]></description>
+      <ExtendedData>
+        <Data name="category"><value>National parks</value></Data>
+        <Data name="county"><value>Keweenaw</value></Data>
+      </ExtendedData>
       <styleUrl>#national_park_unit</styleUrl>
-      <Point><coordinates>-88.90929,47.995865,0</coordinates></Point>
+      <Point><coordinates>-88.82780657,48.01145819,0</coordinates></Point>
     </Placemark>
     <Placemark>
       <name>Keweenaw National Historical Park</name>
-      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/Keweenaw%20National%20Historical%20Park%20Headquarters.jpg" width="320"/><br/><p>U.S. national park in Michigan</p><p>Established: 1992 &middot; County: Houghton</p><p><a href="https://en.wikipedia.org/wiki/Keweenaw_National_Historical_Park">More information</a></p>]]></description>
+      <description><![CDATA[<img src="https://www.nps.gov/common/uploads/structured_data/3C7D1933-1DD8-B71B-0BDEE535F0C69BBC.jpg" width="320"/><br/><p>The stories of people and copper in the Keweenaw Peninsula have been intertwined for more than 7,000 years. Indigenous peoples made copper into tools and trade items. Investors and immigrants arrived in the 1800s in a great mineral rush, developing thriving industries and cosmopolitan communities. Though the mines have since closed, their mark is still visible on the land and people.</p><p>County: Houghton</p><p><a href="https://www.nps.gov/kewe/index.htm">More information</a></p>]]></description>
+      <ExtendedData>
+        <Data name="category"><value>National parks</value></Data>
+        <Data name="county"><value>Houghton</value></Data>
+      </ExtendedData>
       <styleUrl>#national_park_unit</styleUrl>
-      <Point><coordinates>-88.5636,47.1564,0</coordinates></Point>
+      <Point><coordinates>-88.52275344,47.1792308,0</coordinates></Point>
     </Placemark>
     <Placemark>
-      <name>North Country Trail</name>
-      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/NCT%20Huron-Manistee%201.jpg" width="320"/><br/><p>long-distance hiking trail in the United States</p><p>County: Kent</p><p><a href="https://en.wikipedia.org/wiki/North_Country_Trail">More information</a></p>]]></description>
+      <name>North Country National Scenic Trail</name>
+      <description><![CDATA[<img src="https://www.nps.gov/common/uploads/structured_data/3C834C15-1DD8-B71B-0BDB0B3A229F398B.jpg" width="320"/><br/><p>Come to the North Country. Trek the hills and valleys. Stand on the shores of lakes &amp; streams from glaciers 10,000 years before. Clear-flowing water, red/gold of autumn, a fairyland of snow, open prairies, and distant horizons paint the land. Historic sites along the way tell how America settled and grew as a nation. From North Dakota to Vermont, adventure is never far away.</p><p><a href="https://www.nps.gov/noco/index.htm">More information</a></p>]]></description>
+      <ExtendedData>
+        <Data name="category"><value>National parks</value></Data>
+      </ExtendedData>
       <styleUrl>#national_park_unit</styleUrl>
-      <Point><coordinates>-85.3378,42.9345,0</coordinates></Point>
+      <Point><coordinates>-90.8165630499,46.334400743,0</coordinates></Point>
     </Placemark>
     <Placemark>
       <name>Pictured Rocks National Lakeshore</name>
-      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/Pictured%20Rocks%20Bridalveil%20Falls.jpg" width="320"/><br/><p>U.S. National Lakeshore on Lake Superior</p><p>County: Alger</p><p><a href="https://en.wikipedia.org/wiki/Pictured_Rocks_National_Lakeshore">More information</a></p>]]></description>
+      <description><![CDATA[<img src="https://www.nps.gov/common/uploads/structured_data/B502655F-03A4-E3C2-33CEA40037E6DC09.jpg" width="320"/><br/><p>Sandstone cliffs, beaches, waterfalls, sand dunes, inland lakes, deep forest, and wild shoreline beckon you to visit Pictured Rocks National Lakeshore. The power of Lake Superior shapes the park's coastal features and affects every ecosystem, creating a unique landscape to explore. Hiking, camping, sightseeing, and four-season outdoor opportunities abound.</p><p>County: Alger</p><p><a href="https://www.nps.gov/piro/index.htm">More information</a></p>]]></description>
+      <ExtendedData>
+        <Data name="category"><value>National parks</value></Data>
+        <Data name="county"><value>Alger</value></Data>
+      </ExtendedData>
       <styleUrl>#national_park_unit</styleUrl>
-      <Point><coordinates>-86.3125,46.5622,0</coordinates></Point>
+      <Point><coordinates>-86.31628733,46.56435642,0</coordinates></Point>
     </Placemark>
     <Placemark>
       <name>River Raisin National Battlefield Park</name>
-      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/River%20Raisin%20National%20Battlefield%20Park.jpg" width="320"/><br/><p>national park in Michigan, USA</p><p>Established: 2009 &middot; County: Monroe</p><p><a href="https://en.wikipedia.org/wiki/River_Raisin_National_Battlefield_Park">More information</a></p>]]></description>
+      <description><![CDATA[<img src="https://www.nps.gov/common/uploads/structured_data/3C7C380D-1DD8-B71B-0BB6B63A283B9B55.jpg" width="320"/><br/><p>River Raisin NBP preserves, commemorates, and interprets the January 1813 battles of the War of 1812 and their aftermath. Battles that resulted in the greatest victory for Tecumseh’s Confederation and the British and the greatest defeat for the U.S. The aftermath led to U.S. Indian laws that forced the removal, relocation, and assimilation of native nations, an aftermath that continues today.</p><p>County: Monroe</p><p><a href="https://www.nps.gov/rira/index.htm">More information</a></p>]]></description>
+      <ExtendedData>
+        <Data name="category"><value>National parks</value></Data>
+        <Data name="county"><value>Monroe</value></Data>
+      </ExtendedData>
       <styleUrl>#national_park_unit</styleUrl>
-      <Point><coordinates>-83.378333,41.913611,0</coordinates></Point>
+      <Point><coordinates>-83.37620464,41.91291085,0</coordinates></Point>
     </Placemark>
     <Placemark>
       <name>Sleeping Bear Dunes National Lakeshore</name>
-      <description><![CDATA[<img src="http://commons.wikimedia.org/wiki/Special:FilePath/Sleeping%20Bear%20Dunes.jpg" width="320"/><br/><p>protected area</p><p>Established: 1970 &middot; County: Leelanau</p><p><a href="https://en.wikipedia.org/wiki/Sleeping_Bear_Dunes_National_Lakeshore">More information</a></p>]]></description>
+      <description><![CDATA[<img src="https://www.nps.gov/common/uploads/structured_data/3C83211B-1DD8-B71B-0B994B42F70185F2.jpg" width="320"/><br/><p>Miles of sand beach, bluffs that tower 450’ above Lake Michigan, lush forests, clear inland lakes, unique flora and fauna make up the natural world of Sleeping Bear Dunes. High dunes afford spectacular views across the lake. An island lighthouse, US Life-Saving Service stations, coastal villages, and picturesque farmsteads reflect the park’s rich maritime, agricultural, and recreational history.</p><p>County: Leelanau</p><p><a href="https://www.nps.gov/slbe/index.htm">More information</a></p>]]></description>
+      <ExtendedData>
+        <Data name="category"><value>National parks</value></Data>
+        <Data name="county"><value>Leelanau</value></Data>
+      </ExtendedData>
       <styleUrl>#national_park_unit</styleUrl>
-      <Point><coordinates>-86.020278,44.913055,0</coordinates></Point>
+      <Point><coordinates>-86.02706591,44.92844962,0</coordinates></Point>
     </Placemark>
     </Folder>
   </Document>

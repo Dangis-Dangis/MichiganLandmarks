@@ -14,10 +14,11 @@ const APP_USER_AGENT = "MichiganLandmarks/1.0 (personal project; legal: ./legal.
 
 const CATEGORIES = [
   { id: "lighthouse", label: "Lighthouses", color: "#1f77b4", emoji: "\uD83D\uDDFC" },
-  { id: "historical_marker", label: "Historical markers", color: "#d62728", emoji: "\uD83E\uDEA7" },
+  { id: "historical_marker", label: "Historical markers", color: "#2ca02c", emoji: "\uD83E\uDEA7" },
   { id: "nrhp_site", label: "Historic places (NRHP)", color: "#9467bd", emoji: "\uD83C\uDFDB\uFE0F" },
-  { id: "state_park", label: "State parks", color: "#2ca02c", emoji: "\uD83C\uDF32" },
+  { id: "state_park", label: "State parks", color: "#ff7f0e", emoji: "\uD83C\uDF32" },
   { id: "national_park_unit", label: "National parks", color: "#8c564b", emoji: "\u26F0\uFE0F" },
+  { id: "museum", label: "Museums", color: "#e377c2", emoji: "\uD83C\uDFA8" },
 ];
 const CAT_BY_ID = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
 const REGIONS = [

@@ -32,7 +32,8 @@
       <h3>What this app does</h3>
       <p>
         Michigan Landmarks helps you browse publicly available landmark information
-        (lighthouses, historical markers, NRHP sites, state and national parks) on
+        (lighthouses, historical markers, NRHP sites, state and national parks,
+        and museums) on
         a map and list. There are <strong>no user accounts</strong> and
         <strong>no backend server</strong> operated by this project.
       </p>
@@ -108,6 +109,21 @@
             <td>Wikidata contributors</td>
           </tr>
           <tr>
+            <td>Museums (Wikidata)</td>
+            <td>CC0</td>
+            <td>Wikidata contributors</td>
+          </tr>
+          <tr>
+            <td>Museums (IMLS Museum Data Files 2018)</td>
+            <td>U.S. Government work (public domain)</td>
+            <td>Institute of Museum and Library Services</td>
+          </tr>
+          <tr>
+            <td>Museums (Wikipedia list / geocoded leftovers)</td>
+            <td>CC BY-SA 4.0 (+ Nominatim for some coords)</td>
+            <td>Wikipedia; OpenStreetMap Nominatim at build time</td>
+          </tr>
+          <tr>
             <td>Wikipedia summaries (some parks)</td>
             <td>CC BY-SA 4.0</td>
             <td>Wikipedia — linked on detail cards</td>
@@ -125,6 +141,8 @@
         </tbody>
       </table>
       <p class="muted">
+        Build-time Wikimedia requests use an identifying bot User-Agent and follow
+        the Wikimedia Robot policy (gzip, rate limits, CDN HTML where preferred).
         Images without a resolved license are omitted from the dataset at build time.
         Photos shown in the app are &copy; their respective owners.
       </p>

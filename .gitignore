@@ -1,9 +1,17 @@
 # Maintainer-only planning notes
 internal/
 
+# Secrets — copy .env.example to .env and fill in locally
+.env
+.env.*
+!.env.example
+
 # Python
 __pycache__/
 *.pyc
+*.egg-info/
+.venv/
+venv/
 .cache/
 
 # Pipeline scratch
@@ -12,6 +20,7 @@ agent-tools/
 # IDE
 .idea/
 *.iml
+*.code-workspace
 
 # OS
 Thumbs.db

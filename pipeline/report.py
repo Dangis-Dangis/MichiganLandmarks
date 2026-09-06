@@ -158,6 +158,14 @@ def write(report: dict) -> tuple[Path, Path]:
     ds = report["details_summary"]
     a(f"- details/ ({ds['files']} files): {_human_bytes(ds['total_bytes'])}")
     a("")
+    log_counts = report.get("log_counts") or {}
+    if log_counts:
+        a("## Pipeline log totals")
+        a("")
+        a(f"- info: {log_counts.get('info', 0)}")
+        a(f"- warn: {log_counts.get('warn', 0)}")
+        a(f"- error: {log_counts.get('error', 0)}")
+        a("")
 
     md_path = config.DATA_DIR / "DATA_REPORT.md"
     md_path.write_text("\n".join(lines), encoding="utf-8")

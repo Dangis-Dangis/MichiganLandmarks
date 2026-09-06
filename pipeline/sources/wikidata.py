@@ -46,10 +46,19 @@ def _fetch(endpoint: str, query: str, timeout: float) -> dict:
         headers={
             "User-Agent": config.USER_AGENT,
             "Accept": "application/sparql-results+json",
+            "Accept-Encoding": "gzip",
         },
     )
     with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return json.loads(resp.read().decode("utf-8", "replace"))
+        raw = resp.read()
+        encoding = (resp.headers.get("Content-Encoding") or "").lower()
+        if encoding == "gzip" or raw[:2] == b"\x1f\x8b":
+            import gzip
+            try:
+                raw = gzip.decompress(raw)
+            except OSError:
+                pass
+        return json.loads(raw.decode("utf-8", "replace"))
 
 
 def run_sparql(query: str) -> list[dict]:

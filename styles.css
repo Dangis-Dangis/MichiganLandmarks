@@ -10,10 +10,11 @@
   --topbar-h: 56px;
 
   --cat-lighthouse: #1f77b4;
-  --cat-historical_marker: #d62728;
+  --cat-historical_marker: #2ca02c;
   --cat-nrhp_site: #9467bd;
-  --cat-state_park: #2ca02c;
+  --cat-state_park: #ff7f0e;
   --cat-national_park_unit: #8c564b;
+  --cat-museum: #e377c2;
 }
 
 * { box-sizing: border-box; }

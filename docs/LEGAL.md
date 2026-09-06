@@ -30,8 +30,17 @@ Do not use government logos or wording that implies an official partnership.
 | NRHP points (NPS via Esri Federal) | ~1,500 | U.S. Government work (public domain) | National Park Service |
 | NPS units (API or Wikidata fallback) | 8 | U.S. Government work / CC0 | National Park Service / Wikidata |
 | Lighthouses (Wikidata) | ~120 | CC0 (Wikidata); images per-file on Commons | Wikidata / Wikimedia Commons |
-| Wikipedia (state park enrichment) | subset | CC BY-SA 4.0 | Link + license on detail card |
+| Museums (Wikidata + IMLS 2018 + Wikipedia list) | varies | CC0 / U.S. Gov PD / CC BY-SA 4.0 | Wikidata; IMLS; Wikipedia |
+| Wikipedia (state park enrichment; museum text) | subset | CC BY-SA 4.0 | Link + license on detail card |
 | FCC Area API (build-time county lookup) | — | U.S. Government | Used only during `pipeline.run` |
+| Nominatim (build-time museum geocode leftovers) | subset | OSM / Nominatim usage policy | Rate-limited; identifying User-Agent |
+
+Wikimedia access follows the
+[Robot policy](https://wikitech.wikimedia.org/wiki/Robot_policy) and
+[User-Agent policy](https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy):
+identifying bot UA, `Accept-Encoding: gzip`, honor `429`/`Retry-After`, REST
+enrichment concurrency ≤3, Commons Action API in serial batches, and museum-list
+HTML via CDN `/wiki/…` (not Action API `parse`).
 
 Official portals: [data.michigan.gov](https://data.michigan.gov),
 [NPS Developer](https://www.nps.gov/subjects/developer/get-started.htm),
@@ -93,7 +102,12 @@ Application source code (pipeline, web UI, Capacitor wrapper) is licensed under 
 
 1. Re-run the pipeline when sources change; review `data/DATA_REPORT.md`.
 2. Do not commit images or descriptions without provenance fields.
-3. Keep Nominatim usage modest (single-user search, not bulk geocoding).
+3. Keep Nominatim usage modest:
+   - In the app: single-user place search only (not bulk geocoding).
+   - In the pipeline: Wikipedia leftover geocoding via Nominatim is **opt-in**
+     (`MUSEUM_GEOCODE=1`). When enabled, pacing is ≈2s between requests with 429
+     backoff and a circuit breaker. Default builds use Wikidata + IMLS coordinates
+     only; Wikipedia still supplies Defunct filtering and Active text enrichment.
 
 ## Play Store checklist
 

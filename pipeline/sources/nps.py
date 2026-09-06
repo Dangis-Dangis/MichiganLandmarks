@@ -36,7 +36,9 @@ def fetch() -> list[Landmark]:
         try:
             return _fetch_api()
         except Exception as exc:  # noqa: BLE001 - fall back rather than fail the run
-            print(f"  [nps] API path failed ({exc}); falling back to Wikidata")
+            from .. import log
+            log.warn(f"[nps] API path failed ({exc}); falling back to Wikidata")
+
     return _fetch_wikidata()
 
 
