@@ -8,16 +8,16 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from .. import config
+from .. import config, facts, urls
 from ..http_util import get_json
-from ..schema import Landmark, make_id, year_from_date
+from ..schema import Landmark, make_id
 from . import wikidata
 
 SOURCE_API = "NPS"
 SOURCE_WD = "Wikidata"
 
 _WD_QUERY = f"""
-SELECT ?item ?itemLabel ?desc ?coord ?image ?inception ?article ?typeLabel WHERE {{
+SELECT ?item ?itemLabel ?desc ?coord ?image ?inception ?article ?website ?typeLabel WHERE {{
   ?item wdt:P137 wd:{config.WD_NPS} .
   ?item wdt:P131* wd:{config.WD_MICHIGAN} .
   ?item wdt:P625 ?coord .
@@ -26,18 +26,25 @@ SELECT ?item ?itemLabel ?desc ?coord ?image ?inception ?article ?typeLabel WHERE
   OPTIONAL {{ ?item wdt:P18 ?image . }}
   OPTIONAL {{ ?item wdt:P571 ?inception . }}
   OPTIONAL {{ ?item wdt:P31 ?type . ?type rdfs:label ?typeLabel . FILTER(LANG(?typeLabel) = "en") }}
+  OPTIONAL {{ ?item wdt:P856 ?website . }}
   OPTIONAL {{ ?article schema:about ?item ; schema:isPartOf <https://en.wikipedia.org/> . }}
 }}
 """
 
 
 def fetch() -> list[Landmark]:
+    from .. import log, stats
+
     if config.NPS_API_KEY:
         try:
-            return _fetch_api()
+            records = _fetch_api()
+            stats.set_nps_via("api")
+            return records
         except Exception as exc:  # noqa: BLE001 - fall back rather than fail the run
-            from .. import log
             log.warn(f"[nps] API path failed ({exc}); falling back to Wikidata")
+            stats.set_nps_via("wikidata_fallback")
+    else:
+        stats.set_nps_via("wikidata")
 
     return _fetch_wikidata()
 
@@ -65,13 +72,13 @@ def _fetch_api() -> list[Landmark]:
             latitude=lat,
             longitude=lon,
             description=p.get("description") or None,
-            official_url=p.get("url") or None,
+            official_url=urls.as_official(p.get("url")),
             image_url=img.get("url") or None,
             image_credit=img.get("credit") or "National Park Service",
             image_license="Public domain (NPS)" if img.get("url") else None,
             source=SOURCE_API,
             source_id=park_code or str(p.get("id")),
-            source_url=p.get("url"),
+            source_url=urls.normalize_url(p.get("url")) or p.get("url"),
             data_license=config.DATA_LICENSE[SOURCE_API],
             last_fetched=now,
             attributes={
@@ -97,7 +104,11 @@ def _fetch_wikidata() -> list[Landmark]:
             continue
         lon, lat = coords
         inception = r.get("inception")
-        landmarks[qid] = Landmark(
+        wiki = urls.as_wikipedia(r.get("article"))
+        attrs = {"fetched_via": "wikidata_fallback", "wikidata_qid": qid}
+        if wiki:
+            attrs["wikipedia_url"] = wiki
+        lm = Landmark(
             id=make_id("national_park_unit", SOURCE_WD, qid),
             name=r.get("itemLabel") or qid,
             category="national_park_unit",
@@ -105,10 +116,7 @@ def _fetch_wikidata() -> list[Landmark]:
             latitude=lat,
             longitude=lon,
             description=r.get("desc") or None,
-            official_url=r.get("article"),
-            significant_date=inception.split("T")[0] if inception else None,
-            date_type="established" if inception else None,
-            year=year_from_date(inception),
+            official_url=urls.as_official(r.get("website")),
             image_url=r.get("image"),
             image_credit="Wikimedia Commons" if r.get("image") else None,
             image_license=None,
@@ -117,8 +125,10 @@ def _fetch_wikidata() -> list[Landmark]:
             source_url=f"https://www.wikidata.org/wiki/{qid}",
             data_license=config.DATA_LICENSE[SOURCE_WD],
             last_fetched=now,
-            attributes={"fetched_via": "wikidata_fallback", "wikidata_qid": qid},
+            attributes=attrs,
         )
+        facts.record_date(lm, "established", inception)
+        landmarks[qid] = lm
     return list(landmarks.values())
 
 

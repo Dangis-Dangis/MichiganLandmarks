@@ -1,0 +1,64 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Pipeline",
+      "type": "shell",
+      "command": "python -m pipeline.run",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Pipeline (--no-enrich)",
+      "type": "shell",
+      "command": "python -m pipeline.run --no-enrich",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Pipeline (--geocode-museums)",
+      "type": "shell",
+      "command": "python -m pipeline.run --geocode-museums",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Pipeline (--verbose)",
+      "type": "shell",
+      "command": "python -m pipeline.run --verbose",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Sync Android",
+      "type": "shell",
+      "command": "npm run sync",
+      "options": { "cwd": "${workspaceFolder}/mobile" },
+      "group": "build"
+    },
+    {
+      "label": "Open Android Studio",
+      "type": "shell",
+      "command": "npm run open:android",
+      "options": { "cwd": "${workspaceFolder}/mobile" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Debug APK",
+      "type": "shell",
+      "command": "npm run apk:debug",
+      "options": { "cwd": "${workspaceFolder}/mobile" },
+      "group": "build"
+    },
+    {
+      "label": "Export developer APK",
+      "type": "shell",
+      "command": "npm run apk:export",
+      "options": { "cwd": "${workspaceFolder}/mobile" }
+    }
+  ]
+}

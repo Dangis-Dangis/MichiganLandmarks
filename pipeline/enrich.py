@@ -13,7 +13,7 @@ import re
 import time
 import urllib.parse
 
-from . import config
+from . import config, log, progress
 from .concurrency import map_threaded
 from .http_util import get_json, post_json
 from .config import WIKIPEDIA_SUMMARY
@@ -37,14 +37,18 @@ def _county_for_point(lm: Landmark) -> str | None:
             backoff=config.ENRICH_BACKOFF,
         )
     except RuntimeError as exc:
-        from . import log
         log.warn(f"county lookup failed for {lm.name!r}: {exc}")
         return None
     results = data.get("results") or []
     if not results:
+        log.debug(log.fmt("counties", f"empty FCC result for {lm.name!r}"))
         return None
     top = results[0]
     if (top.get("state_code") or "").upper() != "MI":
+        log.debug(log.fmt(
+            "counties",
+            f"non-MI FCC result for {lm.name!r}: {top.get('state_code')!r}",
+        ))
         return None
     name = top.get("county_name")
     return name.replace(" County", "").strip() if name else None
@@ -52,9 +56,19 @@ def _county_for_point(lm: Landmark) -> str | None:
 
 def fill_missing_counties(landmarks: list[Landmark]) -> int:
     """Backfill county from coordinates for records lacking one (lighthouses, parks,
-    NPS units), so they can be assigned a region. Best-effort + parallel."""
+    NPS units). Best-effort + parallel."""
     targets = [lm for lm in landmarks if not lm.county and lm.latitude is not None]
-    results = map_threaded(_county_for_point, targets, config.COUNTY_WORKERS)
+    if not targets:
+        return 0
+
+    def _on_progress(done: int, total: int) -> None:
+        progress.tick(done, total, label="counties")
+        if done == 1 or done == total or done % 25 == 0:
+            log.info(log.fmt("counties", "lookups", idx=done, total=total))
+
+    results = map_threaded(
+        _county_for_point, targets, config.COUNTY_WORKERS, on_progress=_on_progress,
+    )
     filled = 0
     for lm, county in zip(targets, results):
         if county:
@@ -163,6 +177,7 @@ def _commons_query_titles(titles: list[str]) -> dict[str, tuple[str | None, str 
             backoff=config.ENRICH_BACKOFF,
         )
     except RuntimeError:
+        log.debug("[enrich] Commons imageinfo query failed")
         return {}
     out: dict[str, tuple[str | None, str | None]] = {}
     pages = payload.get("query", {}).get("pages", {})
@@ -198,6 +213,7 @@ def _commons_search_filename(hint: str) -> str | None:
             backoff=config.ENRICH_BACKOFF,
         )
     except RuntimeError:
+        log.debug(f"[enrich] Commons search failed for {hint!r}")
         return None
     for hit in payload.get("query", {}).get("search", []):
         title = hit.get("title") or ""
@@ -214,9 +230,13 @@ def commons_resolve_filenames(filenames: list[str]) -> dict[str, tuple[str | Non
 
     resolved: dict[str, tuple[str | None, str | None]] = {}
     batch_size = config.COMMONS_BATCH_SIZE
+    n_batches = (len(unique) + batch_size - 1) // batch_size
 
     for start in range(0, len(unique), batch_size):
         chunk = unique[start : start + batch_size]
+        bi = start // batch_size + 1
+        log.info(log.fmt("enrich", f"{len(chunk)} files", step="commons", idx=bi, total=n_batches))
+        progress.tick(bi, n_batches, label="commons")
         titles = [commons_file_title(name) for name in chunk]
         batch_result = _commons_query_titles(titles)
         for name in chunk:
@@ -224,6 +244,8 @@ def commons_resolve_filenames(filenames: list[str]) -> dict[str, tuple[str | Non
             info = batch_result.get(key)
             if info and info[0]:
                 resolved[key] = info
+            elif not info:
+                log.debug(log.fmt("enrich", f"no Commons metadata for {name!r}", step="commons"))
         if start + batch_size < len(unique):
             time.sleep(config.COMMONS_BATCH_PAUSE)
 
@@ -234,6 +256,7 @@ def commons_resolve_filenames(filenames: list[str]) -> dict[str, tuple[str | Non
     for name in missing:
         alt = _commons_search_filename(name)
         if not alt:
+            log.debug(log.fmt("enrich", f"Commons search miss for {name!r}", step="commons"))
             continue
         hit = _commons_query_titles([commons_file_title(alt)])
         info = hit.get(_normalize_filename_key(alt))
@@ -261,11 +284,18 @@ def wikipedia_summary(title: str) -> dict | None:
             retries=config.ENRICH_RETRIES,
             backoff=config.ENRICH_BACKOFF,
         )
-    except RuntimeError:
+    except RuntimeError as exc:
+        log.debug(log.fmt("enrich", f"Wikipedia summary failed for {title!r}: {exc}", step="wikipedia"))
         return None
     if not isinstance(data, dict):
+        log.debug(log.fmt("enrich", f"Wikipedia summary not a dict for {title!r}", step="wikipedia"))
         return None
     if data.get("type") == "disambiguation" or "extract" not in data:
+        log.debug(log.fmt(
+            "enrich",
+            f"Wikipedia skip for {title!r} (disambiguation or no extract)",
+            step="wikipedia",
+        ))
         return None
     return data
 
@@ -282,6 +312,7 @@ def _enrich_one_park(lm: Landmark) -> dict | None:
         if summary:
             break
     if not summary:
+        log.debug(log.fmt("enrich", f"no Wikipedia summary for {lm.name!r}", step="wikipedia"))
         return None
     result: dict = {
         "description": summary.get("extract"),
@@ -301,7 +332,16 @@ def _enrich_one_park(lm: Landmark) -> dict | None:
 def enrich_state_parks(landmarks: list[Landmark]) -> int:
     """Fill missing description/image for state parks from Wikipedia (parallel)."""
     targets = [lm for lm in landmarks if lm.category == "state_park" and not lm.description]
-    results = map_threaded(_enrich_one_park, targets, config.ENRICH_WORKERS)
+    if not targets:
+        return 0
+
+    def _on_progress(done: int, total: int) -> None:
+        progress.tick(done, total, label="wikipedia")
+        log.info(log.fmt("enrich", "summaries", step="wikipedia", idx=done, total=total))
+
+    results = map_threaded(
+        _enrich_one_park, targets, config.ENRICH_WORKERS, on_progress=_on_progress,
+    )
     enriched = 0
     for lm, res in zip(targets, results):
         if not res:
@@ -312,8 +352,6 @@ def enrich_state_parks(landmarks: list[Landmark]) -> int:
             lm.attributes["description_license"] = res.get("description_license")
         if res.get("wikipedia_url"):
             lm.attributes["wikipedia_url"] = res["wikipedia_url"]
-            if not lm.official_url:
-                lm.official_url = res["wikipedia_url"]
         if res.get("image_url") and not lm.image_url:
             lm.image_url = res["image_url"]
             lm.image_credit = res.get("image_credit")
@@ -343,9 +381,11 @@ def resolve_commons_licenses(landmarks: list[Landmark]) -> int:
     for lm in pending:
         filename = url_to_filename.get(lm.image_url)
         if not filename:
+            log.debug(log.fmt("enrich", f"unparseable Commons URL for {lm.name!r}", step="commons"))
             continue
         info = lookup.get(_normalize_filename_key(filename))
         if not info:
+            log.debug(log.fmt("enrich", f"no Commons license for {lm.name!r}", step="commons"))
             continue
         lic, artist = info
         if lic:

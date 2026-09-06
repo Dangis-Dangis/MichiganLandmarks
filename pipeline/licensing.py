@@ -6,6 +6,7 @@ set during enrichment (see enrich.py).
 """
 from __future__ import annotations
 
+from . import log
 from .schema import Landmark
 
 # Licenses we accept for hotlinking and metadata in exported data.
@@ -39,8 +40,13 @@ def strip_unlicensed_images(landmarks: list[Landmark]) -> int:
             continue
         if is_allowed_image_license(lm.image_license):
             continue
+        license_was = lm.image_license
         lm.image_url = None
         lm.image_credit = None
         lm.image_license = None
         stripped += 1
+        log.debug(log.fmt(
+            "license",
+            f"stripped image for {lm.name!r} (license={license_was!r})",
+        ))
     return stripped

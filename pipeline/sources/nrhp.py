@@ -1,14 +1,15 @@
 """National Register of Historic Places points, filtered to Michigan.
 
 The public points layer omits restricted-geography listings and represents
-districts as a single point. Official link goes to the National Archives catalog.
+districts as a single point. Nomination PDFs live on ``attributes.nara_url``;
+they are not the venue website.
 """
 from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from .. import config
-from ..schema import Landmark, make_id, year_from_date
+from .. import config, facts, urls
+from ..schema import Landmark, make_id
 from . import arcgis
 
 SOURCE = "NRHP"
@@ -19,20 +20,6 @@ def _clean(value):
         return None
     text = str(value).strip()
     return text or None
-
-
-def _epoch_to_year(value):
-    """NRHP date fields are sometimes epoch milliseconds (esriFieldTypeDate)."""
-    if value is None:
-        return None
-    try:
-        ms = int(value)
-    except (TypeError, ValueError):
-        return year_from_date(value)
-    # plausible epoch-ms range for NRHP listings (1960s-now)
-    if ms > 10**11:
-        return datetime.fromtimestamp(ms / 1000, tz=timezone.utc).year
-    return year_from_date(value)
 
 
 def fetch() -> list[Landmark]:
@@ -50,36 +37,41 @@ def fetch() -> list[Landmark]:
         refnum = _clean(a.get("NRIS_Refnum"))
         county = _clean(a.get("County"))
         is_nhl = (_clean(a.get("Is_NHL")) or "").upper() in {"Y", "YES", "TRUE", "1"}
-        cert = a.get("CertDate")
-        year = _epoch_to_year(cert) or _epoch_to_year(a.get("CREATEDATE"))
-        nara = _clean(a.get("NARA_URL"))
+        cert_date = facts.iso_date(a.get("CertDate"))
+        nara = urls.normalize_url(_clean(a.get("NARA_URL")))
+        oid = a.get("OBJECTID")
+        attrs = {
+            "ref_number": refnum,
+            "property_type": _clean(a.get("ResType")),
+            "is_nhl": is_nhl,
+        }
+        if nara:
+            attrs["nara_url"] = nara
 
-        landmarks.append(Landmark(
-            id=make_id("nrhp_site", SOURCE, refnum or a.get("OBJECTID")),
+        lm = Landmark(
+            id=make_id("nrhp_site", SOURCE, refnum or oid),
             name=name,
             category="nrhp_site",
             subtype=("National Historic Landmark" if is_nhl else _clean(a.get("ResType"))),
             latitude=lat,
             longitude=lon,
             description=None,
-            official_url=nara,
-            significant_date=str(year) if year else None,
-            date_type="listed" if year else None,
-            year=year,
+            official_url=None,
             source=SOURCE,
-            source_id=refnum or str(a.get("OBJECTID")),
-            source_url=config.NRHP_LAYER + f"/query?where=NRIS_Refnum='{refnum}'" if refnum else None,
+            source_id=refnum or str(oid),
+            source_url=urls.feature_page_url(config.NRHP_LAYER, oid),
             data_license=config.DATA_LICENSE[SOURCE],
             last_fetched=now,
             county=county.title() if county else None,
             city=(_clean(a.get("City")) or _clean(a.get("Vicinity")) or "").title() or None,
             address=_clean(a.get("Address")),
-            region=config.region_for_county(county),
             tags=["national_historic_landmark"] if is_nhl else [],
-            attributes={
-                "ref_number": refnum,
-                "property_type": _clean(a.get("ResType")),
-                "is_nhl": is_nhl,
-            },
-        ))
+            attributes=attrs,
+        )
+        if cert_date:
+            facts.record_date(lm, "listed", cert_date)
+            facts.add_recognition(lm, "National Register of Historic Places", cert_date, SOURCE)
+        if is_nhl:
+            facts.add_recognition(lm, "National Historic Landmark", None, SOURCE)
+        landmarks.append(lm)
     return landmarks

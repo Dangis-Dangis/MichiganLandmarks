@@ -13,9 +13,9 @@
 </head>
 <body>
   <header id="topbar">
-    <button id="menuToggle" class="icon-btn" aria-label="Toggle filters" title="Filters">&#9776;</button>
+    <button id="menuToggle" class="icon-btn" aria-label="Toggle filters" title="Filters" aria-expanded="false">&#9776;</button>
     <div id="searchWrap">
-      <input id="searchInput" type="search" placeholder="Search landmarks, or type a place + Enter" autocomplete="off" />
+      <input id="searchInput" type="search" placeholder="Search landmarks" autocomplete="off" enterkeyhint="search" />
       <button id="searchClear" class="icon-btn" aria-label="Clear" title="Clear">&times;</button>
     </div>
     <button id="locateBtn" class="icon-btn" aria-label="Find near me" title="Near me">&#9678;</button>
@@ -23,14 +23,19 @@
     <button id="viewToggle" class="icon-btn" aria-label="Toggle list/map" title="List / Map">&#8801;</button>
   </header>
 
+  <div id="filtersBackdrop" class="hidden"></div>
   <aside id="filters" class="hidden" aria-label="Filters and sorting">
+    <div class="filters-header">
+      <h2>Filters</h2>
+      <button id="filtersClose" class="icon-btn" aria-label="Close filters" title="Close">&times;</button>
+    </div>
+    <div class="filters-bulk">
+      <button type="button" id="filtersShowAll" class="text-btn">Show all</button>
+      <button type="button" id="filtersHideAll" class="text-btn">Hide all</button>
+    </div>
     <div class="filter-section">
       <h3>Categories</h3>
       <div id="categoryFilters"></div>
-    </div>
-    <div class="filter-section">
-      <h3>Region</h3>
-      <div id="regionFilters"></div>
     </div>
     <div class="filter-section">
       <h3>Sort by</h3>
@@ -42,10 +47,13 @@
       </select>
     </div>
     <div class="filter-section">
-      <label class="checkbox"><input type="checkbox" id="withImageOnly" /> Has photo only</label>
+      <label class="checkbox filter-toggle" for="withImageOnly"><input type="checkbox" id="withImageOnly" /> Has photo only</label>
+      <label class="checkbox filter-toggle" for="hideLocalityPins"><input type="checkbox" id="hideLocalityPins" /> Hide city/township pins</label>
     </div>
     <p id="resultCount" class="muted"></p>
   </aside>
+
+  <div id="searchHint" class="search-hint hidden" role="status"></div>
 
   <main id="content">
     <div id="map"></div>
@@ -54,6 +62,7 @@
 
   <div id="detailPanel" class="hidden" role="dialog" aria-label="Landmark details">
     <button id="detailClose" class="icon-btn" aria-label="Close">&times;</button>
+    <div id="detailHandle" class="detail-handle" aria-hidden="true"></div>
     <div id="detailBody"></div>
   </div>
 

@@ -55,19 +55,19 @@ Build steps: [`../mobile/README.md`](../mobile/README.md).
 ### Privacy and data safety
 - [ ] **Privacy policy URL** — Play requires a public URL. This project does not
       host a website; link to `legal.html` in your GitHub repository, e.g.
-      `https://github.com/YOUR_ORG/michigan/blob/main/legal.html`.
+      `https://github.com/Dangis-Dangis/MichiganLandmarks/blob/main/legal.html`.
       The same content is bundled in the app (**Legal / privacy** in the header).
 - [ ] **Data safety form:**
   - Location: **used in-app** for “Near me” sorting; **not collected**, not shared,
     not stored on a server (there is no backend).
   - No accounts, no analytics SDK, no ads.
-  - Optional network: map tiles (OpenFreeMap/OSM), place search (Nominatim),
-    hotlinked photos, external direction links.
+  - Optional network: map tiles (OpenFreeMap/OSM), hotlinked photos,
+    external direction links.
 
 ### Permissions
 - [ ] **ACCESS_FINE_LOCATION / ACCESS_COARSE_LOCATION** — justify as on-device
       distance sort and map centering only (`@capacitor/geolocation`).
-- [ ] **INTERNET** — map tiles, optional Nominatim search, hotlinked images.
+- [ ] **INTERNET** — map tiles, hotlinked images, user-tapped outbound links.
 
 ### Content and compliance
 - [ ] Complete the content rating questionnaire (no user-generated content).
@@ -87,8 +87,8 @@ npm run sync
 
 ## Sideloading (non-Play)
 
-For friends and testers, share `app-debug.apk` from `assembleDebug`. On the device:
-**Settings → Security → Install unknown apps** for the file manager used to open the APK.
+Share `mobile/dist/MichiganLandmarks-debug.apk` after `cd mobile && npm run apk:debug && npm run apk:export`.
+On the device: **Settings → Security → Install unknown apps** for the file manager used to open the APK.
 
 ## Updating landmark data
 

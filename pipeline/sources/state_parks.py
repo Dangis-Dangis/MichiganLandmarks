@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from .. import config
+from .. import config, urls
 from ..schema import Landmark, make_id
 from . import arcgis
 
@@ -50,10 +50,10 @@ def fetch() -> list[Landmark]:
             latitude=lat,
             longitude=lon,
             description=None,
-            official_url=_clean(a.get("url")),
+            official_url=urls.as_official(_clean(a.get("url"))),
             source=SOURCE,
             source_id=src_id,
-            source_url=config.STATE_PARKS_LAYER + f"/query?where=OBJECTID={a.get('OBJECTID')}",
+            source_url=urls.feature_page_url(config.STATE_PARKS_LAYER, a.get("OBJECTID")),
             data_license=config.DATA_LICENSE[SOURCE],
             last_fetched=now,
             city=(_clean(a.get("City")) or "").title() or None,

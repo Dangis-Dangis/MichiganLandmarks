@@ -46,18 +46,16 @@ _load_dotenv(ROOT / ".env")
 # Wikimedia User-Agent policy: identifying client + contact URL, not a generic
 # library default. "bot" marks this as automated dataset rebuild traffic.
 # https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy
-USER_AGENT = (
-    "MichiganLandmarksBot/1.0 "
-    "(https://github.com/Dangis-Dangis/MichiganLandmarks)"
+_CONTACT = (
+    "https://github.com/Dangis-Dangis/MichiganLandmarks; "
+    "dangisdangis.dev@gmail.com"
 )
+USER_AGENT = f"MichiganLandmarksBot/1.0 ({_CONTACT})"
 
 # Identifying user-agent for the app UI (Nominatim policy, etc.).
 APP_NAME = "MichiganLandmarks"
 APP_VERSION = "1.0"
-APP_USER_AGENT = (
-    f"{APP_NAME}/{APP_VERSION} "
-    "(https://github.com/Dangis-Dangis/MichiganLandmarks)"
-)
+APP_USER_AGENT = f"{APP_NAME}/{APP_VERSION} ({_CONTACT})"
 REQUEST_TIMEOUT = 60
 MAX_RETRIES = 4
 RETRY_BACKOFF = 2.0  # seconds, exponential
@@ -150,12 +148,23 @@ WD_MUSEUM = "Q33506"
 IMLS_MUSEUM_ZIP = (
     "https://www.imls.gov/sites/default/files/2018_csv_museum_data_files.zip"
 )
+# Public landing page for that dataset (user-facing source_url; zip stays in attributes).
+IMLS_DATASET_PAGE = (
+    "https://www.imls.gov/research-evaluation/data-collection/museum-data-files"
+)
 
-# Opt-in: geocode Wikipedia Active museum leftovers via Nominatim (slow; 429-prone).
-# Default off so routine builds rely on Wikidata + IMLS coordinates.
+# Opt-in leftover museum geocoding via Nominatim (slow; 429-prone).
+# Canonical switch is `python -m pipeline.run --geocode-museums`. The env var is
+# still honored so existing local `.env` copies keep working.
 MUSEUM_GEOCODE = os.environ.get("MUSEUM_GEOCODE", "").strip().lower() in (
     "1", "true", "yes", "on",
 )
+
+
+def set_museum_geocode(enabled: bool) -> None:
+    """Set leftover geocoding for this process (CLI flag unions with the env var)."""
+    global MUSEUM_GEOCODE
+    MUSEUM_GEOCODE = bool(enabled)
 
 # ----------------------------------------------------------------------------
 # Licensing metadata (per source). Honest, real values.
@@ -172,62 +181,6 @@ DATA_LICENSE = {
 
 # Text pulled from Wikipedia during enrichment (CC BY-SA 4.0).
 WIKIPEDIA_TEXT_LICENSE = "CC BY-SA 4.0"
-
-# ----------------------------------------------------------------------------
-# Regions: each Michigan county mapped to one of 9 tourism-style regions.
-# The UP is split west/east along the Marquette–Alger line.
-# Region labels (display order) are exposed to the app as the region filter.
-# ----------------------------------------------------------------------------
-REGIONS = (
-    "Western UP",
-    "Eastern UP",
-    "Northwest",
-    "Northeast",
-    "West Michigan",
-    "Central",
-    "East/Thumb",
-    "Southwest",
-    "Southeast",
-)
-
-# County -> region. Keys are normalized (uppercase, no periods) so lookups are
-# robust to source variations like "St. Clair" vs "ST CLAIR".
-_COUNTY_REGION_RAW = {
-    "Western UP": [
-        "Baraga", "Delta", "Dickinson", "Gogebic", "Houghton", "Iron", "Keweenaw",
-        "Menominee", "Ontonagon",
-    ],
-    "Eastern UP": [
-        "Alger", "Chippewa", "Luce", "Mackinac", "Marquette", "Schoolcraft",
-    ],
-    "Northwest": [
-        "Antrim", "Benzie", "Charlevoix", "Emmet", "Grand Traverse", "Kalkaska",
-        "Leelanau", "Manistee", "Missaukee", "Wexford",
-    ],
-    "Northeast": [
-        "Alcona", "Alpena", "Cheboygan", "Crawford", "Iosco", "Montmorency",
-        "Ogemaw", "Oscoda", "Otsego", "Presque Isle", "Roscommon",
-    ],
-    "West Michigan": [
-        "Allegan", "Barry", "Ionia", "Kent", "Lake", "Mason", "Mecosta", "Montcalm",
-        "Muskegon", "Newaygo", "Oceana", "Osceola", "Ottawa",
-    ],
-    "Central": [
-        "Arenac", "Bay", "Clare", "Clinton", "Eaton", "Gladwin", "Gratiot",
-        "Ingham", "Isabella", "Midland", "Saginaw", "Shiawassee",
-    ],
-    "East/Thumb": [
-        "Genesee", "Huron", "Lapeer", "Sanilac", "St. Clair", "Tuscola",
-    ],
-    "Southwest": [
-        "Berrien", "Branch", "Calhoun", "Cass", "Kalamazoo", "St. Joseph", "Van Buren",
-    ],
-    "Southeast": [
-        "Hillsdale", "Jackson", "Lenawee", "Livingston", "Macomb", "Monroe",
-        "Oakland", "Washtenaw", "Wayne",
-    ],
-}
-
 
 # Michigan's official county codes are alphabetical 1-83 (St. = "Saint" in sort).
 # The historical-markers source stores this code instead of a name.
@@ -253,20 +206,3 @@ def county_from_code(code) -> str | None:
     except (TypeError, ValueError):
         return None
     return MICHIGAN_COUNTIES[n - 1] if 1 <= n <= len(MICHIGAN_COUNTIES) else None
-
-
-def _norm_county(name: str) -> str:
-    return name.upper().replace(".", "").replace(" COUNTY", "").strip()
-
-
-COUNTY_REGION = {
-    _norm_county(county): region
-    for region, counties in _COUNTY_REGION_RAW.items()
-    for county in counties
-}
-
-
-def region_for_county(county: str | None) -> str | None:
-    if not county:
-        return None
-    return COUNTY_REGION.get(_norm_county(county))

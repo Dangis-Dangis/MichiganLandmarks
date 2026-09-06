@@ -5,6 +5,9 @@ bundles the app shell **and landmark data** (~18 MB of index + details), so
 browsing works offline. Map basemap tiles still load from the network when
 online.
 
+Developer workflow (open Studio from Cursor, pipeline variants, debug APK,
+developer APK export): [`../docs/DEVELOP.md`](../docs/DEVELOP.md).
+
 ## How it works
 
 - `copy-web.mjs` assembles `www/` from the repo-root UI (`index.html`, `app.js`,
@@ -51,8 +54,16 @@ npm run sync                # copy-web.mjs + cap sync
 
 ## Sideloading
 
-Send `app-debug.apk` to testers. On their phone: allow installs from the app
-used to open the file (Files, Chrome, etc.), then tap to install.
+After `npm run apk:debug` (or Build APK in Studio), export a stable copy:
+
+```bash
+npm run apk:export
+# → dist/MichiganLandmarks-debug.apk
+```
+
+Send that file to testers. On their phone: allow installs from the app used to
+open the file (Files, Chrome, etc.), then tap to install. This is a debug-signed
+developer APK, not a Play Store build.
 
 ## Signed release / Play Store
 

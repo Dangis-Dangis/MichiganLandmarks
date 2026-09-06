@@ -24,6 +24,9 @@ _POINT_RE = re.compile(r"Point\(([-\d.]+)\s+([-\d.]+)\)", re.IGNORECASE)
 PREFIXES = (
     "PREFIX wd: <http://www.wikidata.org/entity/>\n"
     "PREFIX wdt: <http://www.wikidata.org/prop/direct/>\n"
+    "PREFIX p: <http://www.wikidata.org/prop/>\n"
+    "PREFIX ps: <http://www.wikidata.org/prop/statement/>\n"
+    "PREFIX pq: <http://www.wikidata.org/prop/qualifier/>\n"
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
     "PREFIX schema: <http://schema.org/>\n"
 )
@@ -69,6 +72,8 @@ def run_sparql(query: str) -> list[dict]:
         return _bindings(_fetch(WDQS_ENDPOINT, full, WDQS_TIMEOUT))
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
         errors.append(f"wdqs: {repr(exc)[:90]}")
+        from .. import log
+        log.debug(f"[wikidata] WDQS failed, trying QLever ({exc})")
     # 2) QLever fallback (used during WDQS outages / 429 rate-limiting).
     for attempt in range(2):
         try:

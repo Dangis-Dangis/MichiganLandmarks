@@ -14,10 +14,15 @@ __pycache__/
 venv/
 .cache/
 
+# Pipeline output (regenerate with `python -m pipeline.run`)
+data/
+*.log
+
 # Pipeline scratch
 agent-tools/
 
-# IDE
+# Editor / IDE (local)
+.cursor/
 .idea/
 *.iml
 *.code-workspace
@@ -27,12 +32,11 @@ Thumbs.db
 .DS_Store
 
 # Mobile / Android (generated or local-only)
-mobile/node_modules/
+node_modules/
 mobile/www/
 mobile/android/
-mobile/android/key.properties
 mobile/*.keystore
 mobile/*.jks
-
-# Regenerate data with `python -m pipeline.run`. Tracked so clone-and-build works
-# without re-fetching sources; omit if you prefer a smaller repo and always rebuild.
+mobile/dist/
+*.apk
+*.aab

@@ -18,7 +18,9 @@ import urllib.parse
 import urllib.request
 from typing import Any
 
-from . import config
+from . import config, log
+
+_logger = log.get_logger(__name__)
 
 
 def _decode_body(resp) -> bytes:
@@ -58,6 +60,12 @@ def _retry_wait(exc: Exception, attempt: int, pause: float) -> float:
     return pause * (2 ** attempt)
 
 
+def _sleep_retry(exc: Exception, attempt: int, tries: int, pause: float, url: str) -> None:
+    wait = _retry_wait(exc, attempt, pause)
+    _logger.debug(f"retry {attempt + 1}/{tries} after {wait:.1f}s ({exc!r}) {url}")
+    time.sleep(wait)
+
+
 def get_bytes(url: str, params: dict[str, Any] | None = None, *,
               headers: dict[str, str] | None = None,
               timeout: float | None = None, retries: int | None = None,
@@ -74,12 +82,12 @@ def get_bytes(url: str, params: dict[str, Any] | None = None, *,
         except urllib.error.HTTPError as exc:
             last_err = exc
             if attempt < tries - 1:
-                time.sleep(_retry_wait(exc, attempt, pause))
+                _sleep_retry(exc, attempt, tries, pause, url)
                 continue
         except (urllib.error.URLError, TimeoutError) as exc:
             last_err = exc
             if attempt < tries - 1:
-                time.sleep(_retry_wait(exc, attempt, pause))
+                _sleep_retry(exc, attempt, tries, pause, url)
                 continue
     raise RuntimeError(f"request failed after {tries} tries: {url}\n  -> {last_err}")
 
@@ -131,11 +139,11 @@ def _request_json(url: str, data: bytes | None = None, headers: dict[str, str] |
         except urllib.error.HTTPError as exc:
             last_err = exc
             if attempt < tries - 1:
-                time.sleep(_retry_wait(exc, attempt, pause))
+                _sleep_retry(exc, attempt, tries, pause, url)
                 continue
         except (urllib.error.URLError, TimeoutError, RuntimeError, json.JSONDecodeError) as exc:
             last_err = exc
             if attempt < tries - 1:
-                time.sleep(_retry_wait(exc, attempt, pause))
+                _sleep_retry(exc, attempt, tries, pause, url)
                 continue
     raise RuntimeError(f"request failed after {tries} tries: {url}\n  -> {last_err}")

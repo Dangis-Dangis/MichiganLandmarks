@@ -8,8 +8,9 @@
     "add:android": "npm run build:web && cap add android",
     "sync": "npm run build:web && cap sync",
     "open:android": "cap open android",
-    "apk:debug": "cd android && gradlew.bat assembleDebug",
-    "apk:release": "cd android && gradlew.bat assembleRelease",
+    "apk:debug": "npm run sync && node gradle-run.mjs assembleDebug",
+    "apk:release": "node gradle-run.mjs assembleRelease",
+    "apk:export": "node apk-export.mjs",
     "icons:android": "npx @capacitor/assets generate --android"
   },
   "dependencies": {

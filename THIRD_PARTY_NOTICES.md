@@ -15,12 +15,14 @@ This app bundles or loads the following third-party software and data. See
 MapLibre is loaded from unpkg in `index.html` at runtime. Capacitor packages are
 build-time dependencies under `mobile/`.
 
-## Map and geocoding services (network)
+## Map services (network)
 
 | Service | Data license / terms | Use in app |
 |---------|----------------------|------------|
 | OpenFreeMap vector tiles | OpenStreetMap data © OpenStreetMap contributors (ODbL) | Basemap |
-| OpenStreetMap Nominatim | OSM data (ODbL); [usage policy](https://operations.osmfoundation.org/policies/nominatim/) | Named-place search |
+
+OpenStreetMap Nominatim is used only at **build time** (opt-in museum leftover
+geocoding in the pipeline), not by the app.
 
 ## Data sources (aggregated landmark records)
 

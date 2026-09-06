@@ -13,9 +13,10 @@ from __future__ import annotations
 
 import csv
 import json
+import time
 from pathlib import Path
 
-from . import config
+from . import config, urls
 from .schema import Landmark
 
 _OVERLAY_DESC_LIMIT = 600  # chars, keeps per-category My Maps CSV small
@@ -23,6 +24,30 @@ _OVERLAY_DESC_LIMIT = 600  # chars, keeps per-category My Maps CSV small
 
 def safe_filename(landmark_id: str) -> str:
     return landmark_id.replace(":", "__")
+
+
+def _write_text(path: Path, text: str) -> None:
+    """Write UTF-8 text, retrying on transient Windows file-lock errors."""
+    last: OSError | None = None
+    data = text.encode("utf-8")
+    tmp = path.with_name(path.name + ".tmp")
+    for attempt in range(8):
+        try:
+            with tmp.open("wb") as fh:
+                fh.write(data)
+            tmp.replace(path)
+            return
+        except OSError as exc:
+            last = exc
+            time.sleep(0.1 * (2 ** attempt))
+        finally:
+            try:
+                if tmp.exists():
+                    tmp.unlink()
+            except OSError:
+                pass
+    assert last is not None
+    raise last
 
 
 def _xml_escape(text: str) -> str:
@@ -60,7 +85,7 @@ def write_csv(landmarks: list[Landmark]) -> Path:
         "description", "official_url", "significant_date", "date_type", "year",
         "image_url", "image_credit", "image_license",
         "source", "source_id", "source_url", "data_license", "last_fetched",
-        "county", "city", "address", "region", "water_body", "tags",
+        "county", "city", "address", "water_body", "location_quality", "tags",
     ]
     path = config.DATA_DIR / "landmarks.csv"
     with path.open("w", newline="", encoding="utf-8") as fh:
@@ -84,8 +109,9 @@ def write_app_data(landmarks: list[Landmark]) -> tuple[Path, int]:
         index.append(rec)
         fname = f"{safe_filename(lm.id)}.json"
         current_files.add(fname)
-        (config.DETAILS_DIR / fname).write_text(
-            json.dumps(lm.to_dict(), ensure_ascii=False), encoding="utf-8"
+        _write_text(
+            config.DETAILS_DIR / fname,
+            json.dumps(lm.to_dict(), ensure_ascii=False),
         )
         written += 1
     # Drop stale detail files left over from a previous (larger) build so the
@@ -130,10 +156,28 @@ def _placemark(lm: Landmark, trim_desc: int | None = None) -> str:
         meta.append(f"County: {_xml_escape(lm.county)}")
     if lm.city:
         meta.append(f"City: {_xml_escape(lm.city)}")
+    addr = urls.display_address(lm.address, lm.city)
+    if addr:
+        meta.append(f"Address: {_xml_escape(addr)}")
     if meta:
         html_parts.append("<p>" + " &middot; ".join(meta) + "</p>")
-    if lm.official_url:
-        html_parts.append(f'<p><a href="{_xml_escape(lm.official_url)}">More information</a></p>')
+    official = urls.as_official(lm.official_url)
+    if official:
+        html_parts.append(f'<p><a href="{_xml_escape(official)}">Website</a></p>')
+    wiki = (lm.attributes or {}).get("wikipedia_url")
+    if wiki:
+        html_parts.append(f'<p><a href="{_xml_escape(str(wiki))}">Wikipedia</a></p>')
+    nara = (lm.attributes or {}).get("nara_url")
+    if nara:
+        html_parts.append(f'<p><a href="{_xml_escape(str(nara))}">Nomination (NARA)</a></p>')
+    if lm.source_url:
+        html_parts.append(f'<p><a href="{_xml_escape(lm.source_url)}">Source data</a></p>')
+    html_parts.append(
+        f'<p><a href="{_xml_escape(urls.maps_search_url(lm))}">Google Maps</a></p>'
+    )
+    html_parts.append(
+        f'<p><a href="{_xml_escape(urls.maps_directions_url(lm.latitude, lm.longitude))}">Directions</a></p>'
+    )
     reported = _date_reported(lm)
     if reported:
         html_parts.append(f"<p>Date reported: {_xml_escape(reported)}</p>")

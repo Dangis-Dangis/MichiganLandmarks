@@ -67,22 +67,33 @@ Creative Commons licenses that permit display with attribution (CC BY, CC BY-SA)
   pipeline stores `description_source` and `description_license`; the app shows
   attribution on the detail card.
 
-## Map tiles and place search
+## Outbound links
+
+Detail cards link out only when the user taps them:
+
+- **Official website** — the venue or agency site (`official_url`), never Wikipedia or NARA.
+- **Open in Maps / Directions** — each action offers the destinations that exist
+  for that record: GPS coordinates, name + address, and street address. Tapping a
+  destination opens Google Maps (search or directions). No Google Places API and
+  no stored Maps queries. A street-address line (when the record has one) is
+  selectable text with a copy control.
+- **Search the web** — a Google web search for the landmark name and locality.
+- **Source data / Nomination** — the originating open catalog (Wikidata, DNR/NPS
+  feature pages, IMLS dataset page, NARA nomination).
+
+## Map tiles and search
 
 - Basemap: OpenFreeMap (OpenStreetMap vector data, ODbL). MapLibre attribution
   control is enabled.
-- Place search: queries are sent to
-  [Nominatim](https://nominatim.openstreetmap.org/) with an identifying
-  `User-Agent`. Results are not stored on a server.
+- Landmark search filters the bundled index locally. It does not call a
+  geocoding service.
 
 ## Privacy (summary)
 
 - **Location:** used on-device only (distance sort, map centering). Not sent to
   our servers — there are no accounts or backend.
-- **Nominatim:** place names you search are sent to OpenStreetMap's Nominatim
-  service when online.
-- **Third-party loads:** map tiles, hotlinked images, and external direction
-  links (Google Maps) load from their respective hosts when online.
+- **Third-party loads:** map tiles, hotlinked images, and user-initiated Google
+  Maps search/directions load from their respective hosts when online.
 
 Full text: [`legal.html#privacy`](../legal.html#privacy).
 
@@ -103,11 +114,17 @@ Application source code (pipeline, web UI, Capacitor wrapper) is licensed under 
 1. Re-run the pipeline when sources change; review `data/DATA_REPORT.md`.
 2. Do not commit images or descriptions without provenance fields.
 3. Keep Nominatim usage modest:
-   - In the app: single-user place search only (not bulk geocoding).
+   - The app does not call Nominatim.
    - In the pipeline: Wikipedia leftover geocoding via Nominatim is **opt-in**
-     (`MUSEUM_GEOCODE=1`). When enabled, pacing is ≈2s between requests with 429
-     backoff and a circuit breaker. Default builds use Wikidata + IMLS coordinates
-     only; Wikipedia still supplies Defunct filtering and Active text enrichment.
+     (`python -m pipeline.run --geocode-museums`; `MUSEUM_GEOCODE=1` still works).
+     When enabled, pacing is ≈2s between requests with 429 backoff and a circuit
+     breaker. Resolution order is Wikipedia article coordinates, then Nominatim
+     on the museum name, then a city/township/county pin as last resort. Locality
+     pins are published with `location_quality=locality` and an in-app warning.
+     Default builds use Wikidata + IMLS coordinates; Wikipedia still supplies
+     Defunct filtering, Active text enrichment, and coordinate upgrades when an
+     article has a better point.
+   How to run the flag: [`DEVELOP.md`](DEVELOP.md).
 
 ## Play Store checklist
 

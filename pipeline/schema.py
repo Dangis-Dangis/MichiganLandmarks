@@ -10,6 +10,8 @@ import re
 from dataclasses import dataclass, field, asdict
 from typing import Any
 
+from .plaque import english_plaque_text
+
 
 _SLUG_RE = re.compile(r"[^a-z0-9]+")
 
@@ -51,9 +53,11 @@ class Landmark:
     county: str | None = None
     city: str | None = None
     address: str | None = None
-    region: str | None = None  # tourism-style region (e.g. Western UP, Southeast)
     water_body: str | None = None
     tags: list[str] = field(default_factory=list)
+    # site = source/article coords; name = Nominatim on the place name;
+    # locality = city/township/county centroid (last-resort geocode).
+    location_quality: str | None = None
 
     # --- Category-specific (and any enrichment provenance) ---
     attributes: dict[str, Any] = field(default_factory=dict)
@@ -72,11 +76,11 @@ class Landmark:
             "longitude": self.longitude,
             "year": self.year,
             "county": self.county,
-            "region": self.region,
             "image_url": self.image_url,
-            "summary": _truncate(self.description, 160),
+            "summary": _truncate(english_plaque_text(self.description), 160),
             "tags": self.tags,
             "has_details": True,
+            "location_quality": self.location_quality,
         }
 
 
@@ -87,6 +91,23 @@ def _truncate(text: str | None, limit: int) -> str | None:
     if len(text) <= limit:
         return text
     return text[: limit - 1].rstrip() + "\u2026"
+
+
+def stamp_location_quality(lm: Landmark) -> str:
+    """Set location_quality from geocode provenance. Source/article coords are site."""
+    if lm.location_quality in ("site", "name", "locality"):
+        return lm.location_quality
+    attrs = lm.attributes or {}
+    via = attrs.get("geocode_via")
+    precision = attrs.get("geocode_precision")
+    if via in ("nominatim_city",) or precision in ("locality", "city"):
+        q = "locality"
+    elif via in ("nominatim_name",) or precision == "name":
+        q = "name"
+    else:
+        q = "site"
+    lm.location_quality = q
+    return q
 
 
 def make_id(category: str, source: str, source_id: str) -> str:
