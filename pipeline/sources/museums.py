@@ -4,7 +4,7 @@ Strategy:
 1. Wikidata SPARQL — live museum (or subclass) items in Michigan with coordinates.
 2. IMLS 2018 Museum Data Files ZIP — broader coverage; frozen snapshot; lat/lon when present.
 3. Wikipedia "List of museums in Michigan" — Active section rows missing from (1)/(2)
-   are geocoded when ``--geocode-museums`` is passed (article coords, then Nominatim
+   are geocoded unless ``--skip-nominatim-geocode`` is passed (article coords, then Nominatim
    name variants, then city/township locality as last resort). Defunct names are
    excluded from all sources.
 4. Wikipedia Active enrichment upgrades weak IMLS coordinates when the article has
@@ -120,7 +120,7 @@ def fetch() -> list[Landmark]:
         stats.museum_leftovers_uncovered = len(leftovers)
         log.warn(
             f"[museums] skipping geocode of {len(leftovers)} Wikipedia Active leftovers "
-            "(pass --geocode-museums to enable rate-limited Nominatim; "
+            "(leftover Nominatim is off this run; omit --skip-nominatim-geocode to enable; "
             "Wikidata + IMLS coverage retained)"
         )
         for row in leftovers[:20]:
@@ -616,24 +616,9 @@ def _is_parent_geography(title: str) -> bool:
 def _leftover_article_matches(museum_name: str, page_title: str, url_slug: str) -> bool:
     """Leftover list links: accept same-building aliases; reject parent geography."""
     slug_name = url_slug.replace("_", " ")
-    if _article_subject_matches(museum_name, page_title, url_slug):
-        return True
     if _is_parent_geography(page_title) or _is_parent_geography(slug_name):
         return False
-    tb = _alias_tokens(museum_name)
-    for candidate in (page_title, slug_name):
-        if not candidate:
-            continue
-        ta = _alias_tokens(candidate)
-        if not ta or not tb:
-            continue
-        inter = len(ta & tb)
-        union = len(ta | tb)
-        if union and inter / union >= 0.5:
-            return True
-        if inter >= 2:
-            return True
-    return False
+    return _article_subject_matches(museum_name, page_title, url_slug)
 
 
 def _enrich_from_wikipedia_active(landmarks: list[Landmark], active: list[dict]) -> int:

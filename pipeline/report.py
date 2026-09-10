@@ -137,7 +137,7 @@ def build(
 
     ui_shell_bytes = 0
     ui_shell_files = 0
-    for rel in ("index.html", "app.js", "styles.css", "legal.html", "manifest.webmanifest"):
+    for rel in ("index.html", "app.js", "wiki.js", "styles.css", "legal.html", "manifest.webmanifest"):
         p = config.ROOT / rel
         if p.is_file():
             ui_shell_bytes += p.stat().st_size
@@ -146,6 +146,12 @@ def build(
     if icons_dir.is_dir():
         for p in icons_dir.rglob("*"):
             if p.is_file() and p.suffix != ".py":
+                ui_shell_bytes += p.stat().st_size
+                ui_shell_files += 1
+    vendor_dir = config.ROOT / "vendor"
+    if vendor_dir.is_dir():
+        for p in vendor_dir.rglob("*"):
+            if p.is_file():
                 ui_shell_bytes += p.stat().st_size
                 ui_shell_files += 1
 
@@ -209,7 +215,7 @@ def _fallbacks_md(fb: dict) -> list[str]:
     a(f"- NPS path: {fb.get('nps_via') or 'unknown'}")
     skipped = fb.get("enrich_skipped")
     if skipped == "flag":
-        a("- Wikimedia enrich: skipped (`--no-enrich`)")
+        a("- Wikimedia enrich: skipped (`--skip-wikipedia` / `--skip-commons`)")
     elif skipped == "unreachable":
         a("- Wikimedia enrich: skipped (API unreachable)")
     else:
@@ -234,6 +240,8 @@ def _fallbacks_md(fb: dict) -> list[str]:
         f"- location quality: site={lq.get('site', 0)}, "
         f"name={lq.get('name', 0)}, locality={lq.get('locality', 0)}"
     )
+    a(f"- HTTP cache: hits={fb.get('http_cache_hits', 0)}, misses={fb.get('http_cache_misses', 0)}")
+    a(f"- detail files unchanged (not rewritten): {fb.get('details_skipped_unchanged', 0)}")
     a("")
     return lines
 
@@ -382,6 +390,17 @@ def write(report: dict) -> tuple[Path, Path]:
         a(f"- enrich: {'on' if opts.get('enrich') else 'off'}")
         a(f"- NPS API key: {'on' if opts.get('nps_api') else 'off'}")
         a(f"- geocode museums: {'on' if opts.get('geocode_museums') else 'off'}")
+        a(f"- GIS exports (GeoJSON/CSV/KML): {'on' if opts.get('export_gis') else 'off'}")
+        a(f"- output dir: {opts.get('output_dir') or 'data'}")
+        a(f"- fresh (no cache read): {'on' if opts.get('fresh') else 'off'}")
+        if opts.get("skip"):
+            a(f"- skip stages: {', '.join(opts.get('skip') or [])}")
+        if opts.get("until"):
+            a(f"- until: {opts.get('until')}")
+        if opts.get("from_stage"):
+            a(f"- from: {opts.get('from_stage')}")
+        if opts.get("sources_incomplete"):
+            a(f"- INCOMPLETE fetch (--sources): {', '.join(opts.get('sources') or [])}")
         a("")
     a("## Raw counts by source (before merge)")
     a("")

@@ -17,7 +17,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from .. import config
+from .. import config, log
+from ..http_util import get_json
 
 _POINT_RE = re.compile(r"Point\(([-\d.]+)\s+([-\d.]+)\)", re.IGNORECASE)
 
@@ -43,25 +44,13 @@ def _fetch(endpoint: str, query: str, timeout: float) -> dict:
     params = {"query": query}
     if endpoint == WDQS_ENDPOINT:
         params["format"] = "json"
-    url = endpoint + "?" + urllib.parse.urlencode(params)
-    req = urllib.request.Request(
-        url,
-        headers={
-            "User-Agent": config.USER_AGENT,
-            "Accept": "application/sparql-results+json",
-            "Accept-Encoding": "gzip",
-        },
+    return get_json(
+        endpoint,
+        params,
+        headers={"Accept": "application/sparql-results+json"},
+        timeout=timeout,
+        retries=1,
     )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        raw = resp.read()
-        encoding = (resp.headers.get("Content-Encoding") or "").lower()
-        if encoding == "gzip" or raw[:2] == b"\x1f\x8b":
-            import gzip
-            try:
-                raw = gzip.decompress(raw)
-            except OSError:
-                pass
-        return json.loads(raw.decode("utf-8", "replace"))
 
 
 def run_sparql(query: str) -> list[dict]:
@@ -70,15 +59,14 @@ def run_sparql(query: str) -> list[dict]:
     # 1) Wikidata Query Service (authoritative, freshest) - fail fast to the fallback.
     try:
         return _bindings(_fetch(WDQS_ENDPOINT, full, WDQS_TIMEOUT))
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, RuntimeError) as exc:
         errors.append(f"wdqs: {repr(exc)[:90]}")
-        from .. import log
         log.debug(f"[wikidata] WDQS failed, trying QLever ({exc})")
     # 2) QLever fallback (used during WDQS outages / 429 rate-limiting).
     for attempt in range(2):
         try:
             return _bindings(_fetch(QLEVER_ENDPOINT, full, config.REQUEST_TIMEOUT))
-        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, RuntimeError) as exc:
             errors.append(f"qlever#{attempt}: {repr(exc)[:90]}")
             time.sleep(2)
     raise RuntimeError("SPARQL failed on all endpoints -> " + " | ".join(errors))

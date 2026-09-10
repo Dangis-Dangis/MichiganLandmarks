@@ -8,7 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <link href="./vendor/maplibre-gl.css" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
@@ -19,7 +19,13 @@
       <button id="searchClear" class="icon-btn" aria-label="Clear" title="Clear">&times;</button>
     </div>
     <button id="locateBtn" class="icon-btn" aria-label="Find near me" title="Near me">&#9678;</button>
-    <a id="aboutBtn" class="icon-btn" href="./legal.html" aria-label="Legal and privacy" title="Legal / privacy">&#9432;</a>
+    <button type="button" id="aboutBtn" class="icon-btn" aria-label="Help" title="Help">
+      <svg class="icon-svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+        <circle cx="12" cy="8" r="1.4" fill="currentColor"/>
+        <path d="M12 11.5 v6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
     <button id="viewToggle" class="icon-btn" aria-label="Toggle list/map" title="List / Map">&#8801;</button>
   </header>
 
@@ -40,10 +46,10 @@
     <div class="filter-section">
       <h3>Sort by</h3>
       <select id="sortSelect">
-        <option value="distance">Distance (needs location)</option>
         <option value="name">Name (A&ndash;Z)</option>
         <option value="year_desc">Year (newest)</option>
         <option value="year_asc">Year (oldest)</option>
+        <option value="distance" disabled>Distance (needs location)</option>
       </select>
     </div>
     <div class="filter-section">
@@ -68,7 +74,22 @@
 
   <div id="status" class="status hidden"></div>
 
-  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <div id="wikiPanel" class="hidden" role="dialog" aria-modal="true" aria-labelledby="wikiTitle" aria-hidden="true">
+    <header class="wiki-header">
+      <button type="button" id="wikiBack" class="icon-btn hidden" aria-label="Back to help topics" title="Back">&#8592;</button>
+      <h1 id="wikiTitle">Help</h1>
+      <button type="button" id="wikiClose" class="icon-btn" aria-label="Close help" title="Close">&times;</button>
+    </header>
+    <div id="wikiHomeTools" class="wiki-home-tools">
+      <input id="wikiSearch" type="search" placeholder="Search help topics" autocomplete="off" />
+    </div>
+    <nav id="wikiNav" class="wiki-nav" aria-label="Help topics"></nav>
+    <div id="wikiBody" class="wiki-body"></div>
+  </div>
+
+  <script src="./vendor/maplibre-gl.js"></script>
+  <script src="./vendor/marked.min.js"></script>
+  <script src="./wiki.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>

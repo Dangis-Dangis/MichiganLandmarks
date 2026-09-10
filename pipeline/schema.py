@@ -100,9 +100,15 @@ def stamp_location_quality(lm: Landmark) -> str:
     attrs = lm.attributes or {}
     via = attrs.get("geocode_via")
     precision = attrs.get("geocode_precision")
+    srcs = attrs.get("museum_sources") or [lm.source]
     if via in ("nominatim_city",) or precision in ("locality", "city"):
         q = "locality"
     elif via in ("nominatim_name",) or precision == "name":
+        q = "name"
+    elif via in ("wikipedia_summary",) or precision == "article":
+        q = "site"
+    elif lm.source == "IMLS" or "IMLS" in srcs:
+        # IMLS 2018 points are often city-level geocodes, not building pins.
         q = "name"
     else:
         q = "site"

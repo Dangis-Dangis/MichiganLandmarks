@@ -1,5 +1,5 @@
 /* Service worker for local browser UI preview only (not bundled in the Android app). */
-const VERSION = "mi-landmarks-v2";
+const VERSION = "mi-landmarks-v5";
 const CORE_CACHE = VERSION + "-core";
 const DATA_CACHE = VERSION + "-data";
 const RUNTIME_CACHE = VERSION + "-runtime";
@@ -8,14 +8,17 @@ const CORE_ASSETS = [
   "./",
   "./index.html",
   "./legal.html",
+  "./wiki.js",
+  "./docs/index.json",
   "./app.js",
   "./styles.css",
   "./manifest.webmanifest",
   "./icons/icon.svg",
   "./icons/icon-192.png",
+  "./vendor/maplibre-gl.js",
+  "./vendor/maplibre-gl.css",
+  "./vendor/marked.min.js",
   "./data/landmarks.index.json",
-  "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js",
-  "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css",
 ];
 
 self.addEventListener("install", (event) => {
@@ -69,9 +72,9 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Per-record detail JSON -> cache as it's viewed (lazy offline build-up).
+  // Per-record detail JSON -> cache as it's viewed, revalidate so rebuilds show up.
   if (url.pathname.includes("/data/details/")) {
-    event.respondWith(cacheFirst(req, DATA_CACHE));
+    event.respondWith(staleWhileRevalidate(req, DATA_CACHE));
     return;
   }
 
@@ -89,6 +92,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Map tiles, fonts, sprites, and MapLibre CDN -> best-effort runtime cache.
+  // Map tiles, fonts, and sprites -> best-effort runtime cache.
   event.respondWith(staleWhileRevalidate(req, RUNTIME_CACHE));
 });

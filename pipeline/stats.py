@@ -24,6 +24,9 @@ museum_intra_merges: int = 0
 counties_filled: int = 0
 id_collisions: int = 0
 location_quality: Counter[str] = Counter()
+http_cache_hits: int = 0
+http_cache_misses: int = 0
+details_skipped_unchanged: int = 0
 
 
 def reset() -> None:
@@ -33,6 +36,7 @@ def reset() -> None:
     global museum_coord_upgrades, museum_coord_skips_name_mismatch
     global merged_clusters, museum_intra_merges, counties_filled
     global id_collisions
+    global http_cache_hits, http_cache_misses, details_skipped_unchanged
     with _lock:
         source_fetch_failed.clear()
         source_returned_zero.clear()
@@ -52,6 +56,9 @@ def reset() -> None:
         counties_filled = 0
         id_collisions = 0
         location_quality.clear()
+        http_cache_hits = 0
+        http_cache_misses = 0
+        details_skipped_unchanged = 0
 
 
 def note_source_failed(name: str, exc: BaseException) -> None:
@@ -85,6 +92,26 @@ def inc_coord_skip() -> None:
         museum_coord_skips_name_mismatch += 1
 
 
+def inc_cache_hit() -> None:
+    global http_cache_hits
+    with _lock:
+        http_cache_hits += 1
+
+
+def inc_cache_miss() -> None:
+    global http_cache_misses
+    with _lock:
+        http_cache_misses += 1
+
+
+def add_details_skipped(n: int) -> None:
+    global details_skipped_unchanged
+    if n <= 0:
+        return
+    with _lock:
+        details_skipped_unchanged += n
+
+
 def snapshot() -> dict:
     with _lock:
         return {
@@ -106,4 +133,7 @@ def snapshot() -> dict:
             "counties_filled": counties_filled,
             "id_collisions": id_collisions,
             "location_quality": dict(location_quality),
+            "http_cache_hits": http_cache_hits,
+            "http_cache_misses": http_cache_misses,
+            "details_skipped_unchanged": details_skipped_unchanged,
         }

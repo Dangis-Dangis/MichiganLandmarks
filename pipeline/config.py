@@ -16,7 +16,8 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 DETAILS_DIR = DATA_DIR / "details"
 OVERLAY_DIR = DATA_DIR / "overlay"  # KML/CSV per-category (export only)
-CACHE_DIR = ROOT / ".cache"  # raw source responses (optional, for debugging/reruns)
+CACHE_DIR = ROOT / ".cache"  # Nominatim, HTTP bodies, logs, checkpoints, timings
+CACHE_READ = True  # False when --fresh (still writes new cache entries)
 
 
 def _load_dotenv(path: Path) -> None:
@@ -130,7 +131,7 @@ NRHP_LAYER = (
 # Wikidata SPARQL endpoint (for lighthouses + the no-key NPS fallback + enrichment).
 WIKIDATA_SPARQL = "https://query.wikidata.org/sparql"
 
-# Wikipedia REST summary endpoint (used for optional enrichment of parks).
+# Wikipedia REST summary endpoint (state-park enrichment; skip with --skip-wikipedia).
 WIKIPEDIA_SUMMARY = "https://en.wikipedia.org/api/rest_v1/page/summary/"
 
 # NPS Data API (requires a free API key in NPS_API_KEY, from .env or the environment).
@@ -153,18 +154,28 @@ IMLS_DATASET_PAGE = (
     "https://www.imls.gov/research-evaluation/data-collection/museum-data-files"
 )
 
-# Opt-in leftover museum geocoding via Nominatim (slow; 429-prone).
-# Canonical switch is `python -m pipeline.run --geocode-museums`. The env var is
-# still honored so existing local `.env` copies keep working.
-MUSEUM_GEOCODE = os.environ.get("MUSEUM_GEOCODE", "").strip().lower() in (
-    "1", "true", "yes", "on",
-)
+# Leftover museum Nominatim is on by default. `--skip-nominatim-geocode` turns it off.
+MUSEUM_GEOCODE = True
 
 
 def set_museum_geocode(enabled: bool) -> None:
-    """Set leftover geocoding for this process (CLI flag unions with the env var)."""
+    """Enable leftover museum Nominatim for this process (default on)."""
     global MUSEUM_GEOCODE
     MUSEUM_GEOCODE = bool(enabled)
+
+
+def set_cache_read(enabled: bool) -> None:
+    """When False, skip reading HTTP/Nominatim caches (`--fresh`). Writes still happen."""
+    global CACHE_READ
+    CACHE_READ = bool(enabled)
+
+
+def set_data_dir(path: str | Path) -> None:
+    """Write index, details, report (and optional GIS files) under this directory."""
+    global DATA_DIR, DETAILS_DIR, OVERLAY_DIR
+    DATA_DIR = Path(path).expanduser().resolve()
+    DETAILS_DIR = DATA_DIR / "details"
+    OVERLAY_DIR = DATA_DIR / "overlay"
 
 # ----------------------------------------------------------------------------
 # Licensing metadata (per source). Honest, real values.

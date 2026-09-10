@@ -31,6 +31,9 @@ const state = {
   view: "map",
   map: null,
   mapReady: false,
+  originMarker: null,
+  detailSeq: 0,
+  generated: null,
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -66,6 +69,7 @@ async function loadIndex() {
   if (!res.ok) throw new Error("index fetch failed: " + res.status);
   const data = await res.json();
   state.all = data.landmarks || [];
+  state.generated = data.generated || null;
   hideStatus();
 }
 
@@ -95,10 +99,10 @@ function applyFilters() {
     return true;
   });
 
-  if (state.origin && state.sort === "distance") {
+  if (state.sort === "distance" && state.origin) {
     items.forEach((lm) => { lm._dist = haversineKm(state.origin, { lat: lm.latitude, lon: lm.longitude }); });
     items.sort((a, b) => a._dist - b._dist);
-  } else if (state.sort === "name") {
+  } else if (state.sort === "name" || (state.sort === "distance" && !state.origin)) {
     items.sort((a, b) => a.name.localeCompare(b.name));
   } else if (state.sort === "year_desc") {
     items.sort((a, b) => (b.year || -1e9) - (a.year || -1e9));
@@ -263,7 +267,7 @@ function renderList() {
     const card = document.createElement("div");
     card.className = "list-card";
     const thumb = lm.image_url
-      ? `<img class="list-thumb" loading="lazy" src="${lm.image_url}" alt="" onerror="this.style.display='none'"/>`
+      ? `<img class="list-thumb" loading="lazy" src="${escapeAttr(lm.image_url)}" alt="" onerror="this.style.display='none'"/>`
       : `<div class="list-thumb placeholder">${cat ? cat.emoji : "\uD83D\uDCCD"}</div>`;
     const dist = lm._dist != null ? `<span class="list-dist">${fmtDist(lm._dist)}</span>` : "";
     const quality = locationQuality(lm);
@@ -304,6 +308,7 @@ function renderList() {
 /* Detail panel                                                                */
 /* -------------------------------------------------------------------------- */
 async function openDetail(record) {
+  const seq = ++state.detailSeq;
   const panel = $("#detailPanel");
   const body = $("#detailBody");
   body.innerHTML = '<p class="muted">Loading\u2026</p>';
@@ -316,6 +321,7 @@ async function openDetail(record) {
   } catch (e) {
     d = record; // fall back to index fields when offline and uncached
   }
+  if (seq !== state.detailSeq) return;
 
   const datesBlock = datesRecognitionsHtml(d);
   const dateLabel = !datesBlock.hasBlock && d.date_type && d.year
@@ -369,7 +375,7 @@ async function openDetail(record) {
     ${facts.length ? `<div class="detail-facts">${facts.join("")}</div>` : ""}
     ${d.image_credit ? `<p class="detail-credit">Photo: ${escapeHtml(d.image_credit)}${d.image_license ? " (" + escapeHtml(d.image_license) + ")" : ""}</p>` : ""}
     ${sourcesHtml(d)}
-    <p class="detail-credit"><a href="./legal.html">Legal, privacy &amp; sources</a> \u00b7 Unofficial app, not affiliated with Michigan DNR or NPS.</p>
+    <p class="detail-credit"><a href="#wiki/legal">Legal, privacy &amp; sources</a> \u00b7 Unofficial app, not affiliated with Michigan DNR or NPS.</p>
   `;
 }
 
@@ -401,6 +407,7 @@ function locationWarningHtml(d, record) {
   return "";
 }
 
+// Keep in sync with pipeline/plaque.py (split rules + English function-word list).
 const EN_FUNCTION_WORDS = new Set([
   "the", "of", "and", "to", "in", "a", "is", "was", "for", "that",
   "with", "as", "on", "by", "from", "this", "were", "are", "at",
@@ -571,6 +578,7 @@ function wireEvents() {
       done();
     }
   });
+  $("#sortSelect").value = state.sort;
   $("#sortSelect").addEventListener("change", (e) => { state.sort = e.target.value; applyFilters(); });
   $("#withImageOnly").addEventListener("change", (e) => { state.withImageOnly = e.target.checked; applyFilters(); });
   $("#hideLocalityPins").addEventListener("change", (e) => { state.hideLocalityPins = e.target.checked; applyFilters(); });
@@ -594,16 +602,29 @@ function wireEvents() {
     input.value = ""; state.query = ""; applyFilters(); input.focus();
   });
 
+  $("#aboutBtn").addEventListener("click", () => {
+    if (window.Wiki && window.Wiki.isOpen() && (!location.hash || location.hash === "#wiki")) {
+      window.Wiki.close();
+      return;
+    }
+    if (window.Wiki) window.Wiki.open("home");
+  });
+
   $("#locateBtn").addEventListener("click", async () => {
     showStatus("Locating you\u2026");
     try {
       const pos = await getPosition();
       state.origin = { lat: pos.coords.latitude, lon: pos.coords.longitude };
       state.sort = "distance";
+      const distOpt = $("#sortSelect").querySelector('option[value="distance"]');
+      if (distOpt) distOpt.disabled = false;
       $("#sortSelect").value = "distance";
       if (state.map) {
         state.map.flyTo({ center: [state.origin.lon, state.origin.lat], zoom: 11 });
-        new maplibregl.Marker({ color: "#0b3d2e" }).setLngLat([state.origin.lon, state.origin.lat]).addTo(state.map);
+        if (state.originMarker) state.originMarker.remove();
+        state.originMarker = new maplibregl.Marker({ color: "#0b3d2e" })
+          .setLngLat([state.origin.lon, state.origin.lat])
+          .addTo(state.map);
       }
       applyFilters();
       showStatus("Sorted by distance from you.", 2500);
@@ -687,6 +708,7 @@ function isVenueOfficialUrl(url) {
   if (isEncyclopediaUrl(url) || isNaraUrl(url)) return false;
   const lower = url.toLowerCase();
   const h = urlHost(url);
+  if (!h) return false;
   if (h.includes("arcgis.com") && (lower.includes("/query") || lower.includes("/featureserver"))) return false;
   if (h.endsWith("imls.gov") && lower.endsWith(".zip")) return false;
   return true;
@@ -939,12 +961,14 @@ function iconSvg(name, size) {
 }
 
 function outboundBtn(href, label, icon, outline, hint) {
+  if (!urlHost(href)) return "";
   const cls = outline ? "btn-link btn-link-outline" : "btn-link";
   const hintHtml = hint ? `<span class="btn-hint">${escapeHtml(hint)}</span>` : "";
   return `<a class="${cls}" href="${escapeAttr(href)}" target="_blank" rel="noopener">${iconSvg(icon)}<span class="btn-label"><span>${escapeHtml(label)}</span>${hintHtml}</span></a>`;
 }
 
 function factButton(label, value, href, icon) {
+  if (!urlHost(href)) return "";
   return `<a class="fact-btn" href="${escapeAttr(href)}" target="_blank" rel="noopener">
     ${iconSvg(icon, 20)}
     <span class="fact-btn-text">
@@ -967,17 +991,42 @@ function factHostLabel(url) {
   return h.replace(/^www\./, "");
 }
 
+function initWiki() {
+  if (!window.Wiki) return;
+  window.Wiki.init({
+    onAction: function (name) {
+      if (name === "filters") setFiltersOpen(true);
+      else if (name === "locate") $("#locateBtn").click();
+      else if (name === "list") setView("list");
+      else if (name === "map") setView("map");
+      else if (name === "search") {
+        const input = $("#searchInput");
+        if (input) input.focus();
+      }
+    },
+    getAboutContext: function () {
+      const cap = window.Capacitor;
+      const native = !!(cap && typeof cap.isNativePlatform === "function" && cap.isNativePlatform());
+      return {
+        landmark_count: String(state.all.length),
+        generated: state.generated || "Unknown — rebuild the pipeline to record a timestamp",
+        runtime: native ? "Android app" : "Local browser preview",
+      };
+    },
+  });
+}
+
 async function main() {
   buildFilterUI();
   wireEvents();
   initMap();
   try {
     await loadIndex();
+    applyFilters();
   } catch (e) {
     showStatus("Could not load landmark data.", 5000);
-    return;
   }
-  applyFilters();
+  initWiki();
 
   // In the native Capacitor app the assets are already local, so skip the SW to
   // avoid serving a stale cache after an app update. sw.js is for local browser dev only.

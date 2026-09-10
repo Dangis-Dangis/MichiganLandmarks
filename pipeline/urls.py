@@ -24,12 +24,20 @@ def normalize_url(url: str | None) -> str | None:
     text = str(url).strip()
     if not text or text.lower() in {"none", "n/a", "null"}:
         return None
+    scheme_match = re.match(r"^([a-z][a-z0-9+.-]*):", text, re.IGNORECASE)
+    if scheme_match and scheme_match.group(1).lower() not in {"http", "https"}:
+        return None
     if not re.match(r"^[a-z][a-z0-9+.-]*://", text, re.IGNORECASE):
         text = "https://" + text
     parsed = urlparse(text)
-    if not parsed.netloc:
-        return None
     if parsed.scheme.lower() not in {"http", "https"}:
+        return None
+    try:
+        hostname = parsed.hostname
+        parsed.port  # invalid ports raise ValueError (e.g. https://javascript:alert(1))
+    except ValueError:
+        return None
+    if not hostname or not parsed.netloc:
         return None
     scheme = "https"
     host = parsed.netloc.lower()

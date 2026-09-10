@@ -1,22 +1,25 @@
 """Serializers for every output artifact.
 
-Produces, under data/:
-  - landmarks.geojson          full dataset, one Feature per record
-  - landmarks.csv              full dataset, flattened
-  - landmarks.kml              full dataset, foldered by category (export)
+Produces, under data/ (or ``--output-dir``):
   - landmarks.index.json       lightweight index for map + list (loaded up front)
   - details/<id>.json          full per-record detail (fetched on tap)
-  - overlay/<category>.kml     per-category KML export
-  - overlay/<category>.csv     per-category CSV export
+
+With ``--export-gis`` (QGIS / Google Earth / My Maps; not used by the app):
+  - landmarks.geojson         full dataset, one Feature per record
+  - landmarks.csv              full dataset, flattened
+  - landmarks.kml              full dataset, foldered by category
+  - overlay/<category>.kml     per-category KML
+  - overlay/<category>.csv     per-category CSV
 """
 from __future__ import annotations
 
 import csv
 import json
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
-from . import config, urls
+from . import config, stats, urls
 from .schema import Landmark
 
 _OVERLAY_DESC_LIMIT = 600  # chars, keeps per-category My Maps CSV small
@@ -57,10 +60,11 @@ def _xml_escape(text: str) -> str:
     )
 
 
-def ensure_dirs() -> None:
+def ensure_dirs(*, export_gis: bool = False) -> None:
     config.DATA_DIR.mkdir(parents=True, exist_ok=True)
     config.DETAILS_DIR.mkdir(parents=True, exist_ok=True)
-    config.OVERLAY_DIR.mkdir(parents=True, exist_ok=True)
+    if export_gis:
+        config.OVERLAY_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def write_geojson(landmarks: list[Landmark]) -> Path:
@@ -102,6 +106,7 @@ def write_app_data(landmarks: list[Landmark]) -> tuple[Path, int]:
     """Write landmarks.index.json + details/<id>.json. Returns (index_path, details_count)."""
     index = []
     written = 0
+    skipped = 0
     current_files: set[str] = set()
     for lm in landmarks:
         rec = lm.index_record()
@@ -109,10 +114,17 @@ def write_app_data(landmarks: list[Landmark]) -> tuple[Path, int]:
         index.append(rec)
         fname = f"{safe_filename(lm.id)}.json"
         current_files.add(fname)
-        _write_text(
-            config.DETAILS_DIR / fname,
-            json.dumps(lm.to_dict(), ensure_ascii=False),
-        )
+        payload = json.dumps(lm.to_dict(), ensure_ascii=False)
+        dest = config.DETAILS_DIR / fname
+        if dest.is_file():
+            try:
+                if dest.read_text(encoding="utf-8") == payload:
+                    skipped += 1
+                    written += 1
+                    continue
+            except OSError:
+                pass
+        _write_text(dest, payload)
         written += 1
     # Drop stale detail files left over from a previous (larger) build so the
     # details dir always mirrors the current dataset exactly.
@@ -121,9 +133,14 @@ def write_app_data(landmarks: list[Landmark]) -> tuple[Path, int]:
             existing.unlink()
     index_path = config.DATA_DIR / "landmarks.index.json"
     index_path.write_text(
-        json.dumps({"count": len(index), "landmarks": index}, ensure_ascii=False),
+        json.dumps({
+            "count": len(index),
+            "generated": datetime.now(timezone.utc).isoformat(),
+            "landmarks": index,
+        }, ensure_ascii=False),
         encoding="utf-8",
     )
+    stats.add_details_skipped(skipped)
     return index_path, written
 
 

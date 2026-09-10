@@ -6,12 +6,13 @@ browsing works offline. Map basemap tiles still load from the network when
 online.
 
 Developer workflow (open Studio from Cursor, pipeline variants, debug APK,
-developer APK export): [`../docs/DEVELOP.md`](../docs/DEVELOP.md).
+developer APK export): [`../docs/dev/DEVELOP.md`](../docs/dev/DEVELOP.md).
 
 ## How it works
 
 - `copy-web.mjs` assembles `www/` from the repo-root UI (`index.html`, `app.js`,
-  `styles.css`, `manifest.webmanifest`, `legal.html`, `icons/`) plus
+  `wiki.js`, `styles.css`, `manifest.webmanifest`, `legal.html`, `CHANGELOG.md`,
+  `docs/` except `docs/dev/`, `icons/`, `vendor/`) plus
   `data/landmarks.index.json` and `data/details/`.
 - Capacitor packages `www/` into a native Android WebView app.
 - The web UI detects Capacitor and skips the service worker (assets are already
@@ -22,7 +23,8 @@ developer APK export): [`../docs/DEVELOP.md`](../docs/DEVELOP.md).
 ## Prerequisites (install once)
 
 - **Node.js 20+**
-- **JDK 21** (Capacitor 8 / modern Android Gradle Plugin)
+- **JDK 21** (Capacitor 8 / modern Android Gradle Plugin). Set `JAVA_HOME` in
+  the repo-root `.env` (see `.env.example`); `npm run apk:debug` loads it.
 - **Android SDK** — Android Studio is easiest; needs platform `android-35+` and
   build-tools. Set `ANDROID_HOME` or `ANDROID_SDK_ROOT`.
 
@@ -41,9 +43,10 @@ npm run add:android         # copy-web.mjs + cap add android
 # 3a) Android Studio (recommended):
 npm run open:android        # Run or Build → Build APK
 
-# 3b) Debug APK from CLI:
+# 3b) Debug-signed APK from CLI (not a debugger session):
 npm run apk:debug
 # → android/app/build/outputs/apk/debug/app-debug.apk
+# Cursor task: Build Debug APK. Copy to dist/: npm run apk:export
 ```
 
 After changing the web UI or rebuilding data:
@@ -67,7 +70,7 @@ developer APK, not a Play Store build.
 
 ## Signed release / Play Store
 
-See [`../docs/PLAYSTORE.md`](../docs/PLAYSTORE.md) for keystore setup, AAB
+See [`../docs/dev/PLAYSTORE.md`](../docs/dev/PLAYSTORE.md) for keystore setup, AAB
 build, store listing, and data-safety form.
 
 ## App identity

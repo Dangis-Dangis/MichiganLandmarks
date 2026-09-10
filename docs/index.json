@@ -1,0 +1,65 @@
+{
+  "title": "Help",
+  "pages": [
+    {
+      "id": "home",
+      "title": "Help",
+      "file": "home.md",
+      "nav": false
+    },
+    {
+      "id": "getting-started",
+      "title": "Getting started",
+      "file": "getting-started.md",
+      "nav": true
+    },
+    {
+      "id": "using-the-app",
+      "title": "Using the app",
+      "file": "using-the-app.md",
+      "nav": true
+    },
+    {
+      "id": "legal",
+      "title": "Legal & Privacy",
+      "file": "LEGAL.md",
+      "nav": true
+    },
+    {
+      "id": "known-issues",
+      "title": "Known issues",
+      "file": "known-issues.md",
+      "nav": true
+    },
+    {
+      "id": "roadmap",
+      "title": "What's next",
+      "file": "roadmap.md",
+      "nav": true
+    },
+    {
+      "id": "ios",
+      "title": "iPhone / App Store",
+      "file": "roadmap/ios.md",
+      "nav": false
+    },
+    {
+      "id": "changelog",
+      "title": "Changelog",
+      "file": "../CHANGELOG.md",
+      "nav": true
+    },
+    {
+      "id": "about",
+      "title": "About",
+      "file": "about.md",
+      "nav": true
+    },
+    {
+      "id": "references",
+      "title": "References",
+      "file": "references.md",
+      "nav": true
+    }
+  ]
+}

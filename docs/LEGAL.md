@@ -1,13 +1,10 @@
-# Legal and licensing
+# Legal & Privacy
 
-This document summarizes how Michigan Landmarks handles data, images, third-party
-services, and distribution. It is not legal advice.
+This page is the in-app Legal & Privacy topic (Help). It is not legal advice.
 
-The in-app version lives at [`legal.html`](../legal.html). For Google Play, use
-the public GitHub URL to that file as the privacy-policy link (see
-[`PLAYSTORE.md`](PLAYSTORE.md)).
+The standalone Play Store privacy page is [`legal.html`](../legal.html) at the repository root.
 
-## Unofficial status
+## Unofficial
 
 **Michigan Landmarks is an independent hobby project.** It is not affiliated with,
 endorsed by, or operated by:
@@ -21,7 +18,47 @@ endorsed by, or operated by:
 
 Do not use government logos or wording that implies an official partnership.
 
-## Data sources and licenses
+## Privacy
+
+*Last updated: September 2026*
+
+Michigan Landmarks helps you browse publicly available landmark information
+(lighthouses, historical markers, NRHP sites, state and national parks, and
+museums) on a map and list. There are **no user accounts** and **no backend
+server** operated by this project.
+
+If you tap **Near me**, the app reads your device location **on your device
+only** to sort landmarks by distance and center the map. Location is **not sent
+to our servers** (we do not operate any). The native app requests the system
+location permission; you can deny it and still browse the map manually.
+
+The search box filters the bundled landmark list by name, county, and summary
+text. Pressing Enter (or the keyboard Search / Go key) applies that filter and
+dismisses the keyboard. Search text is not sent to any geocoding service.
+
+Other network requests when you are online:
+
+- **Map tiles** — loaded from OpenFreeMap (OpenStreetMap data).
+- **Photos** — hotlinked from Michigan DNR ArcGIS or Wikimedia Commons when you
+  open a landmark; not bundled in the install package.
+- **Directions / Maps** — tapping Open in Maps, Directions, or the address line
+  opens Google Maps in the browser (Google's privacy policy applies).
+  Destinations may be GPS coordinates, name + address, or a street address.
+  The app does not call a Places API or store those queries.
+- **Official website, Wikipedia, Search the web, source, and nomination
+  links** — open the respective sites when you tap them.
+
+The Android app bundles the landmark index and detail files in the APK. When
+you preview the UI in a desktop browser during development, a service worker may
+cache files you have viewed. Neither mode stores your location history.
+
+The app does not knowingly collect personal information from anyone.
+
+Questions: open an issue on
+[github.com/Dangis-Dangis/MichiganLandmarks](https://github.com/Dangis-Dangis/MichiganLandmarks)
+or email [dangisdangis.dev@gmail.com](mailto:dangisdangis.dev@gmail.com).
+
+## Sources
 
 | Source | Records | License / terms | Attribution |
 |--------|---------|-----------------|-------------|
@@ -46,7 +83,7 @@ Official portals: [data.michigan.gov](https://data.michigan.gov),
 [NPS Developer](https://www.nps.gov/subjects/developer/get-started.htm),
 [NRHP](https://www.nps.gov/subjects/nationalregister/database-research.htm).
 
-## Images
+### Images
 
 - **Marker photos** from Michigan DNR ArcGIS attachments are labeled
   `Michigan DNR Open Data` and credited to Michigan History Center.
@@ -57,17 +94,18 @@ Official portals: [data.michigan.gov](https://data.michigan.gov),
 - **Display:** photos are hotlinked where possible; the detail card shows credit
   and license. Photos are not bundled offline in the APK.
 
-Allowed image licenses include public domain, CC0, Michigan DNR Open Data, and
-Creative Commons licenses that permit display with attribution (CC BY, CC BY-SA).
+Allowed image licenses include public domain, CC0, Michigan DNR Open Data, GFDL,
+and Creative Commons licenses that permit display with attribution (CC BY, CC BY-SA).
+Non-commercial (NC) licenses are omitted.
 
-## Text content
+### Text
 
 - Historical marker plaque text comes from Michigan DNR open data.
 - Some state park descriptions are enriched from Wikipedia (CC BY-SA 4.0). The
   pipeline stores `description_source` and `description_license`; the app shows
   attribution on the detail card.
 
-## Outbound links
+### Outbound links
 
 Detail cards link out only when the user taps them:
 
@@ -81,55 +119,24 @@ Detail cards link out only when the user taps them:
 - **Source data / Nomination** — the originating open catalog (Wikidata, DNR/NPS
   feature pages, IMLS dataset page, NARA nomination).
 
-## Map tiles and search
+### Map tiles and search
 
 - Basemap: OpenFreeMap (OpenStreetMap vector data, ODbL). MapLibre attribution
   control is enabled.
 - Landmark search filters the bundled index locally. It does not call a
   geocoding service.
+- MapLibre GL JS is bundled in the app and is not fetched from a CDN.
 
-## Privacy (summary)
+## Disclaimer
 
-- **Location:** used on-device only (distance sort, map centering). Not sent to
-  our servers — there are no accounts or backend.
-- **Third-party loads:** map tiles, hotlinked images, and user-initiated Google
-  Maps search/directions load from their respective hosts when online.
+- Landmark locations and descriptions may be incomplete or inaccurate.
+- **Not for navigation.** Verify access, safety, and hours on official sites.
+- Information is provided for general reference only. Always verify hours, fees,
+  and access on official agency websites before visiting.
+- No warranty; use at your own risk.
 
-Full text: [`legal.html#privacy`](../legal.html#privacy).
-
-## Software license
+## Software
 
 Application source code (pipeline, web UI, Capacitor wrapper) is licensed under the
 [MIT License](../LICENSE). Third-party library notices:
 [`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md).
-
-## Disclaimers
-
-- Landmark locations and descriptions may be incomplete or inaccurate.
-- **Not for navigation.** Verify access, safety, and hours on official sites.
-- No warranty; use at your own risk.
-
-## Maintainer actions
-
-1. Re-run the pipeline when sources change; review `data/DATA_REPORT.md`.
-2. Do not commit images or descriptions without provenance fields.
-3. Keep Nominatim usage modest:
-   - The app does not call Nominatim.
-   - In the pipeline: Wikipedia leftover geocoding via Nominatim is **opt-in**
-     (`python -m pipeline.run --geocode-museums`; `MUSEUM_GEOCODE=1` still works).
-     When enabled, pacing is ≈2s between requests with 429 backoff and a circuit
-     breaker. Resolution order is Wikipedia article coordinates, then Nominatim
-     on the museum name, then a city/township/county pin as last resort. Locality
-     pins are published with `location_quality=locality` and an in-app warning.
-     Default builds use Wikidata + IMLS coordinates; Wikipedia still supplies
-     Defunct filtering, Active text enrichment, and coordinate upgrades when an
-     article has a better point.
-   How to run the flag: [`DEVELOP.md`](DEVELOP.md).
-
-## Play Store checklist
-
-- [ ] Privacy policy URL → public GitHub link to `legal.html`
-- [ ] Data safety: location used in-app, not collected
-- [ ] Store listing does not imply government endorsement
-- [ ] Re-run `python -m pipeline.run` after source changes; confirm
-      `DATA_REPORT.md` shows zero unspecified image licenses

@@ -1,5 +1,7 @@
 """Split two-sided historical marker plaques into English and other-language text.
 
+Keep the rules here in sync with the copy in app.js (EN_FUNCTION_WORDS, stubs, density).
+
 Michigan History Center markers often put English on one face and Polish, Finnish,
 French, or Anishinaabemowin on the other. The pipeline concatenates both faces;
 this module keeps English as the description/summary and leaves the other

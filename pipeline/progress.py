@@ -136,13 +136,36 @@ def _banner(line: str) -> None:
     log.stage(line)
 
 
-def plan_stages(*, do_enrich: bool, geocode_museums: bool) -> list[str]:
+def plan_stages(
+    *,
+    do_enrich: bool,
+    geocode_museums: bool,
+    skip: set[str] | frozenset[str] | None = None,
+    until: str | None = None,
+    from_stage: str | None = None,
+) -> list[str]:
+    skip = set(skip or ())
     stages = ["fetch"]
-    if geocode_museums:
+    if geocode_museums and "fetch:museum-geocode" not in skip:
         stages.append("fetch:museum-geocode")
     if do_enrich:
-        stages.extend(["enrich:wikipedia", "enrich:commons"])
-    stages.extend(["dedupe", "enrich:heritage", "counties", "license", "output", "report"])
+        if "enrich:wikipedia" not in skip:
+            stages.append("enrich:wikipedia")
+        if "enrich:commons" not in skip:
+            stages.append("enrich:commons")
+    stages.append("dedupe")
+    if "enrich:heritage" not in skip:
+        stages.append("enrich:heritage")
+    if "counties" not in skip:
+        stages.append("counties")
+    stages.extend(["license", "output", "report"])
+    if from_stage:
+        if from_stage not in stages:
+            return stages
+        stages = stages[stages.index(from_stage):]
+    if until:
+        if until in stages:
+            stages = stages[: stages.index(until) + 1]
     return stages
 
 
@@ -222,6 +245,12 @@ def tick(done: int, total: int, *, label: str = "geocode") -> None:
     text = f"[stage]   {label} {done}/{total}  eta {_fmt_s(eta)}"
     step = 25 if total > 25 else 1
     milestone = done == 1 or done == total or done % step == 0
+    from . import log
+    if log.console_mode() != "verbose":
+        if milestone:
+            log.to_file(text)
+        _write_status(running=True, extra=f"{label} {done}/{total}")
+        return
     if _tty():
         pad = max(0, _last_tick_len - len(text))
         sys.stderr.write("\r" + text + (" " * pad))

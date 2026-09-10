@@ -1,19 +1,22 @@
 # Third-party notices
 
 This app bundles or loads the following third-party software and data. See
-[`docs/LEGAL.md`](docs/LEGAL.md) for data-source licensing and
-[`legal.html`](legal.html) for the in-app legal page.
+[`docs/LEGAL.md`](docs/LEGAL.md) for data-source licensing (also in-app Help →
+Legal & Privacy) and [`legal.html`](legal.html) for the standalone Play Store
+privacy page.
 
 ## JavaScript libraries
 
 | Component | Version | License | Source |
 |-----------|---------|---------|--------|
 | MapLibre GL JS | 4.7.1 | BSD 3-Clause | https://github.com/maplibre/maplibre-gl-js |
+| marked | 15.0.12 | MIT | https://github.com/markedjs/marked |
 | Capacitor (Android wrapper) | 8.x | MIT | https://capacitorjs.com |
 | @capacitor/geolocation | 8.x | MIT | https://capacitorjs.com/docs/apis/geolocation |
 
-MapLibre is loaded from unpkg in `index.html` at runtime. Capacitor packages are
-build-time dependencies under `mobile/`.
+MapLibre is bundled from `vendor/` into the APK (and local browser preview).
+marked is bundled from `vendor/marked.min.js` to render in-app Help markdown.
+Capacitor packages are build-time dependencies under `mobile/`.
 
 ## Map services (network)
 
@@ -21,8 +24,8 @@ build-time dependencies under `mobile/`.
 |---------|----------------------|------------|
 | OpenFreeMap vector tiles | OpenStreetMap data © OpenStreetMap contributors (ODbL) | Basemap |
 
-OpenStreetMap Nominatim is used only at **build time** (opt-in museum leftover
-geocoding in the pipeline), not by the app.
+OpenStreetMap Nominatim is used only at **build time** (leftover museum
+geocoding in the pipeline; skip with `--skip-nominatim-geocode`), not by the app.
 
 ## Data sources (aggregated landmark records)
 

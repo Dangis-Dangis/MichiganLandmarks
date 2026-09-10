@@ -13,6 +13,7 @@
     <a href="./" class="legal-back">&larr; Back to map</a>
     <h1>Legal &amp; Privacy</h1>
     <p class="muted">Michigan Landmarks — unofficial guide to public landmark data</p>
+    <p class="muted">In the Android app, Help → Legal &amp; Privacy shows the matching in-app page (<code>docs/LEGAL.md</code>).</p>
   </header>
 
   <main class="legal-main">
@@ -42,8 +43,8 @@
         If you tap <strong>Near me</strong>, the app reads your device location
         <strong>on your device only</strong> to sort landmarks by distance and
         center the map. Location is <strong>not sent to our servers</strong> (we do
-        not operate any). On Android, the Capacitor app requests the standard
-        location permission; you can deny it and still browse the map manually.
+        not operate any). The native app requests the system location permission;
+        you can deny it and still browse the map manually.
       </p>
       <h3>Search</h3>
       <p>
@@ -164,7 +165,8 @@
       <p>
         Application source code is licensed under the
         <a href="https://opensource.org/licenses/MIT">MIT License</a>.
-        Third-party libraries include MapLibre GL JS (BSD 3-Clause) and Capacitor (MIT).
+        Third-party libraries include MapLibre GL JS (BSD 3-Clause; bundled in the app)
+        and Capacitor (MIT).
         See <code>THIRD_PARTY_NOTICES.md</code> in the repository.
       </p>
     </section>

@@ -1,12 +1,12 @@
 """Rate-limited forward geocoding for build-time gaps (museum Wikipedia leftovers).
 
-Uses OpenStreetMap Nominatim with an identifying user-agent. Opt-in only
-(``--geocode-museums`` or ``MUSEUM_GEOCODE=1``). On HTTP 429 the circuit opens immediately so a build
+Uses OpenStreetMap Nominatim with an identifying user-agent. On by default;
+skip with ``--skip-nominatim-geocode``. On HTTP 429 the circuit opens immediately so a build
 does not sit in a retry storm — Wikidata + IMLS coverage is enough to finish.
 
 Nominatim usage policy (https://operations.osmfoundation.org/policies/nominatim/):
-≤1 req/s, single thread, cache results, identifying User-Agent. One-time small
-bulk only — do not enable on every routine rebuild.
+≤1 req/s, single thread, cache results, identifying User-Agent. Skip leftover
+Nominatim (``--skip-nominatim-geocode``) when you do not need those pins.
 """
 from __future__ import annotations
 
@@ -73,6 +73,8 @@ def _cache_path(query: str):
 
 def _cache_get(query: str) -> dict | None | object:
     """Return a result dict, None for a cached miss, or _UNCACHED."""
+    if not config.CACHE_READ:
+        return _UNCACHED
     path = _cache_path(query)
     if not path.is_file():
         return _UNCACHED
@@ -81,7 +83,7 @@ def _cache_get(query: str) -> dict | None | object:
     except (OSError, json.JSONDecodeError):
         return _UNCACHED
     if data.get("miss"):
-        return _UNCACHED
+        return None
     try:
         float(data["lon"])
         float(data["lat"])
@@ -102,6 +104,15 @@ def _cache_put(query: str, result: dict) -> None:
         "miss": False,
     }
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+
+def _cache_put_miss(query: str) -> None:
+    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    path = _cache_path(query)
+    path.write_text(
+        json.dumps({"query": query, "miss": True}, ensure_ascii=False),
+        encoding="utf-8",
+    )
 
 
 _UNCACHED = object()
@@ -246,15 +257,18 @@ def geocode_michigan(
             and isinstance(cached, dict)
             and "osm_class" not in cached
         )
+        if cached is None:
+            continue
         if (
-            cached is not _UNCACHED
-            and isinstance(cached, dict)
+            isinstance(cached, dict)
             and not stale_name_cache
             and _usable_for_purpose(cached, purpose)
         ):
             if variant != variants[0]:
                 log_.info(f"geocode cache hit via variant {variant!r} (for {variants[0]!r})")
             return float(cached["lon"]), float(cached["lat"])
+        if isinstance(cached, dict) and not stale_name_cache:
+            continue
 
         result = _nominatim_search(variant, purpose=purpose, logger=log_)
         if result is not None:
@@ -359,6 +373,7 @@ def _nominatim_search(
 
     if not payload:
         log_.debug(f"geocode: empty Nominatim payload for {q!r}")
+        _cache_put_miss(q)
         return None
     picked = _pick_result(payload, purpose)
     if picked is None and payload:

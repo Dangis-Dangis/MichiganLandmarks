@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 220" role="img" aria-labelledby="offTitle offDesc">
+  <title id="offTitle">Offline versus online content</title>
+  <desc id="offDesc">Bundled text and Help work offline. Map tiles and photos need a network.</desc>
+  <rect width="720" height="220" fill="#f7f7f5"/>
+  <rect x="24" y="24" width="328" height="172" rx="12" fill="#fff" stroke="#0b3d2e" stroke-width="2"/>
+  <rect x="368" y="24" width="328" height="172" rx="12" fill="#fff" stroke="#d1d5db" stroke-width="2"/>
+  <text x="188" y="56" text-anchor="middle" fill="#0b3d2e" font-size="16" font-weight="700" font-family="system-ui,Segoe UI,sans-serif">Works offline</text>
+  <text x="532" y="56" text-anchor="middle" fill="#6b7280" font-size="16" font-weight="700" font-family="system-ui,Segoe UI,sans-serif">Needs network</text>
+  <text x="48" y="88" fill="#1a1a1a" font-size="14" font-family="system-ui,Segoe UI,sans-serif">Landmark index and details</text>
+  <text x="48" y="112" fill="#1a1a1a" font-size="14" font-family="system-ui,Segoe UI,sans-serif">MapLibre library</text>
+  <text x="48" y="136" fill="#1a1a1a" font-size="14" font-family="system-ui,Segoe UI,sans-serif">Help overlay</text>
+  <text x="48" y="160" fill="#1a1a1a" font-size="14" font-family="system-ui,Segoe UI,sans-serif">Local name / county search</text>
+  <text x="392" y="88" fill="#1a1a1a" font-size="14" font-family="system-ui,Segoe UI,sans-serif">OpenFreeMap basemap tiles</text>
+  <text x="392" y="112" fill="#1a1a1a" font-size="14" font-family="system-ui,Segoe UI,sans-serif">Landmark photos</text>
+  <text x="392" y="136" fill="#1a1a1a" font-size="14" font-family="system-ui,Segoe UI,sans-serif">Outbound websites and Maps</text>
+</svg>

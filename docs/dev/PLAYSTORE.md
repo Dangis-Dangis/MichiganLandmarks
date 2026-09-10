@@ -3,7 +3,7 @@
 Michigan Landmarks ships as a **self-contained Capacitor app**: the web UI and
 landmark dataset are bundled in the APK/AAB. No hosted website is required.
 
-Build steps: [`../mobile/README.md`](../mobile/README.md).
+Build steps: [`../../mobile/README.md`](../../mobile/README.md).
 
 ## Prerequisites
 
@@ -56,7 +56,9 @@ Build steps: [`../mobile/README.md`](../mobile/README.md).
 - [ ] **Privacy policy URL** — Play requires a public URL. This project does not
       host a website; link to `legal.html` in your GitHub repository, e.g.
       `https://github.com/Dangis-Dangis/MichiganLandmarks/blob/main/legal.html`.
-      The same content is bundled in the app (**Legal / privacy** in the header).
+      In-app Help uses [`docs/LEGAL.md`](../LEGAL.md) (**Help** → **Legal & Privacy**).
+      Keep `legal.html` in sync with that page's unofficial, privacy, sources,
+      disclaimer, and software sections.
 - [ ] **Data safety form:**
   - Location: **used in-app** for “Near me” sorting; **not collected**, not shared,
     not stored on a server (there is no backend).

@@ -3,8 +3,10 @@
 Named loggers (``pipeline``, ``pipeline.stage``, ``pipeline.geocode``, …) share
 one rotating per-run file. Handlers filter by level:
 
-- **stdout:** INFO+ (DEBUG when ``--verbose``)
-- **stderr:** ``pipeline.stage`` banners only (ETA / plan), not duplicated on stdout
+- **stdout (default verbose):** DEBUG+
+- **stdout (``--quiet``):** WARNING+ (plus the end-of-run summary printed by ``run``)
+- **stdout (``--silent``):** nothing
+- **stderr:** ``pipeline.stage`` banners only when verbose (ETA / plan)
 - **file:** DEBUG+ always, including stage lines and stderr banners
 
 ``log.info`` / ``warn`` / ``error`` / ``debug`` stay as convenience wrappers.
@@ -27,9 +29,13 @@ _STAGE_NAME = "pipeline.stage"
 
 _counts: Counter[str] = Counter()
 _log_path: Path | None = None
-_verbose = False
+_CONSOLE_VERBOSE = "verbose"
+_CONSOLE_QUIET = "quiet"
+_CONSOLE_SILENT = "silent"
+_console = _CONSOLE_VERBOSE
 _file_handler: logging.Handler | None = None
 _stdout_handler: logging.Handler | None = None
+_stderr_handler: logging.Handler | None = None
 
 
 class _BracketFormatter(logging.Formatter):
@@ -87,19 +93,45 @@ def log_path() -> Path | None:
     return _log_path
 
 
+def console_mode() -> str:
+    return _console
+
+
 def verbose() -> bool:
-    return _verbose
+    return _console == _CONSOLE_VERBOSE
 
 
-def set_verbose(enabled: bool) -> None:
-    global _verbose
-    _verbose = bool(enabled)
+def set_console(mode: str) -> None:
+    global _console
+    if mode not in (_CONSOLE_VERBOSE, _CONSOLE_QUIET, _CONSOLE_SILENT):
+        raise ValueError(f"console mode must be verbose, quiet, or silent, not {mode!r}")
+    _console = mode
+    _apply_console_levels()
+
+
+def _stdout_level() -> int:
+    if _console == _CONSOLE_VERBOSE:
+        return logging.DEBUG
+    if _console == _CONSOLE_QUIET:
+        return logging.WARNING
+    return logging.CRITICAL + 1
+
+
+def _stderr_level() -> int:
+    if _console == _CONSOLE_VERBOSE:
+        return logging.INFO
+    return logging.CRITICAL + 1
+
+
+def _apply_console_levels() -> None:
     if _stdout_handler is not None:
-        _stdout_handler.setLevel(logging.DEBUG if _verbose else logging.INFO)
+        _stdout_handler.setLevel(_stdout_level())
+    if _stderr_handler is not None:
+        _stderr_handler.setLevel(_stderr_level())
 
 
 def reset() -> None:
-    global _file_handler, _stdout_handler, _log_path
+    global _file_handler, _stdout_handler, _stderr_handler, _log_path
     _counts.clear()
     root = logging.getLogger(_ROOT_NAME)
     stage = logging.getLogger(_STAGE_NAME)
@@ -116,12 +148,13 @@ def reset() -> None:
                 pass
     _file_handler = None
     _stdout_handler = None
+    _stderr_handler = None
     _log_path = None
 
 
 def start_run() -> Path:
     """Reset counters, attach handlers, open a new rotating log file."""
-    global _file_handler, _stdout_handler, _log_path
+    global _file_handler, _stdout_handler, _stderr_handler, _log_path
     reset()
     log_dir = config.CACHE_DIR / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -134,7 +167,7 @@ def start_run() -> Path:
     _file_handler = file_handler
 
     stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.setLevel(logging.DEBUG if _verbose else logging.INFO)
+    stdout_handler.setLevel(_stdout_level())
     stdout_handler.setFormatter(_BracketFormatter())
     stdout_handler.addFilter(_SkipStageFilter())
     _stdout_handler = stdout_handler
@@ -150,9 +183,10 @@ def start_run() -> Path:
     root.addHandler(count_handler)
 
     stderr_handler = logging.StreamHandler(sys.stderr)
-    stderr_handler.setLevel(logging.INFO)
+    stderr_handler.setLevel(_stderr_level())
     stderr_handler.setFormatter(logging.Formatter("%(message)s"))
     stderr_handler.addFilter(_SkipFileOnlyFilter())
+    _stderr_handler = stderr_handler
 
     stage = logging.getLogger(_STAGE_NAME)
     stage.setLevel(logging.INFO)

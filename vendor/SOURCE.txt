@@ -1,0 +1,14 @@
+MapLibre GL JS 4.7.1
+BSD 3-Clause
+https://github.com/maplibre/maplibre-gl-js
+
+Files (do not edit; replace together when bumping the version):
+  maplibre-gl.js  https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js
+  maplibre-gl.css https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css
+
+marked 15.0.12
+MIT
+https://github.com/markedjs/marked
+
+Files (do not edit; replace when bumping the version):
+  marked.min.js  https://unpkg.com/marked@15.0.12/marked.min.js
